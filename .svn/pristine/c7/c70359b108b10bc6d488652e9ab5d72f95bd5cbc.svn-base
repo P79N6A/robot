@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.mingdan.NameListMapper">
+	<resultMap id="transitList" type="com.bossbutler.pojo.TransitList">
+		<result property="listId" column="list_id" />
+		<result property="projectId" column="project_id" />
+		<result property="accountCode" column="account_code" />
+		<result property="empName" column="emp_name" />
+		<result property="projectName" column="project_name" />
+		<result property="orgName" column="org_name" />
+		<result property="deviceCode" column="device_code" />
+		<result property="transitCode" column="transit_code" />
+		<result property="transitType" column="transit_type" />
+		<result property="beginDateTime" column="begin_date_time" />
+		<result property="endDateTime" column="end_date_time" />
+		<result property="beginDate" column="begin_date" />
+		<result property="endDate" column="end_date" />
+		<result property="limitCount" column="limit_count" />
+		<result property="statusCode" column="status_code" />
+		<result property="statusTime" column="status_time" />
+		<result property="operatorId" column="operator_id" />
+		<result property="synchState" column="synch_state" />
+		<result property="synchCount" column="synch_count" />
+		<result property="synchTime" column="synch_time" />
+		<result property="synchRemark" column="synch_remark" />
+		<result property="dataVersion" column="data_version" />
+
+	</resultMap>
+	
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="transitListColumns">
+	    <![CDATA[
+			list_id,
+			project_id,
+			emp_name,
+			project_name,
+			device_code,
+			transit_code,
+			transit_type,
+			begin_date,
+			end_date,
+			concat(begin_date, ' ', begin_time) begin_date_time,
+			concat(end_date, ' ', end_time) end_date_time,
+			case status_code
+			when '01' then '新增'
+			when '02' then '修改'
+			when '03' then '删除'
+			when '04' then '过期'
+			else '' end status_code,
+			case synch_state
+			when '01' then '未同步'
+			when '02' then '已同步'
+			when '03' then '同步失败'
+			else '' end synch_state,
+			case synch_count
+			when 0 then '无限期'
+			else synch_count end synch_count
+	    ]]>
+	</sql>
+	
+	
+	<select id="getOrgListByProId" resultType="java.util.Map">
+		select 
+			a.org_id as orgId,
+			b.org_name as orgName,
+			c.org_name as supperName,
+			b.duty_type as dutyType 
+		from org_project_relation a
+			left join org b on a.org_id=b.org_id
+		left join org c on b.supper_id=c.org_id
+		where a.project_id=#{projectId}
+	</select>
+	
+
+	<select id="getArrangeListByOrgIds" resultType="java.util.Map" >
+		SELECT DISTINCT
+			b.arrange_id as arrangeId,
+			a.org_id as orgId,
+			c.entrance_type as entrance_type
+		FROM
+			org_resource_relation a
+		JOIN arrange_resource b ON a.resource_id = b.resource_id
+		
+		left join arrange c on b.arrange_id=c.arrange_id
+		WHERE
+			a.org_id in(
+				<foreach collection="list" item="item" separator=",">
+					#{item}
+				</foreach>
+			)
+	</select>
+	
+	<select id="getParentArrange" resultType="java.lang.String" parameterType="java.lang.String">
+		select getSupperLst2(#{superIds}) as status_code;  
+	</select>
+	
+	<select id="getArrangeByArrIdPrId" resultType="java.util.Map" >
+		  SELECT 
+		  		entrance_type,
+		  		arrange_id
+		  from arrange where arrange_id in (${status_code}) and project_id=#{projectId} and (entrance_type='01' or entrance_type='04')
+	</select>
+	
+	
+	  <select id="getDeviceByArrIds"  resultType="java.util.Map">
+		SELECT  DISTINCT 
+			a.device_id as deviceId,
+			b.device_name as deviceName
+		from arrange_device a
+		join device b on a.device_id=b.device_id
+		where b.device_name is not null and 
+			a.arrange_id in(
+				<foreach collection="list" item="item" separator=",">
+					#{item}
+				</foreach>
+			)
+	 </select>
+	 
+	 <select id="getArrangeByPId" resultType="java.util.Map">
+		SELECT DISTINCT
+			a.arrange_id as arrangeId,
+			a.entrance_type as entrance_type
+		FROM
+			arrange a
+		WHERE
+			a.project_id=#{projectId} and a.entrance_type='04'
+	</select>
+	
+	<!--查找某组织的内部通行区域节点 llc -->
+	<select id="getArrangeInsideTreeAll" resultType="java.util.Map">
+		SELECT
+		c.*
+		FROM
+		regional a
+		INNER JOIN regional_arrange_relation b ON
+		b.regional_id =
+		a.regional_id
+		INNER JOIN arrange c ON c.arrange_id =
+		b.arrange_id
+		<where>
+			AND a.org_id = #{org_id}
+			AND a.regional_type='02'
+			AND
+			c.status_code = '01'
+			AND a.status_code = '01' 
+		</where>
+	</select>
+	
+	<select id="getRegionalByOrgId" resultType="com.bossbutler.pojo.TransitList">
+		SELECT DISTINCT
+			b.device_id as deviceId,
+			d.account_code as accountCode,
+			c.emp_name as empName,
+			c.status_code AS empStatusCode,
+			g.org_name as orgName,
+			b.device_code as deviceCode,
+			f.transit_code as transitCode,
+			f.transit_type as transitType,
+			min(e.begin_date) as beginDate,
+			max(e.end_date) as endDate,
+			h.begin_date as oldBeginDate,
+			h.end_date as oldEndDate,
+			case when h.list_id is NULL	
+					then 0				
+			else 1
+			end as isDeviceSynch
+		FROM
+			arrange_device a
+		JOIN device b ON a.device_id = b.device_id
+		join emp c on 1=1
+		join account d
+			on c.account_id=d.account_id
+		join org_resource_relation e
+			on c.org_id=e.org_id
+		left join account_transit f
+			on d.account_id=f.account_id
+		left join org g
+			on c.org_id=g.org_id
+		left join transit_list_result h
+			on d.account_code=h.account_code 
+			 and b.device_code=h.device_code
+			 and f.transit_code=h.transit_code
+			 and f.transit_type=h.transit_type
+			 and h.project_id=#{projectId}
+		WHERE
+			b.device_name IS NOT NULL
+			and c.status_code='01'
+			<if test="arrIdStr !=null and arrIdStr !=''">
+				AND a.arrange_id IN (
+					${arrIdStr}
+				)
+			</if>
+			<if test="deviceId !='' and deviceId !=null">
+				and a.device_id=#{deviceId}
+			</if>
+			
+			and c.org_id=#{orgId}
+			AND e.begin_date IS NOT NULL
+			AND e.end_date IS NOT NULL
+			and 
+			case when 
+				c.status_code ='02'
+ 			then h.list_id is not null 
+			else 1=1
+			end
+		group by 
+			b.device_id,
+			d.account_code,
+			c.emp_name,
+			g.org_name,
+			b.device_code,
+			f.transit_code,
+			f.transit_type,
+			h.begin_date,
+			h.end_date
+		
+	UNION
+		SELECT DISTINCT
+			h.device_id as deviceId,
+			d.account_code as accountCode,
+			c.emp_name as empName,
+			c.status_code AS empStatusCode,
+			e.org_name as orgName,
+			h.device_code as deviceCode,
+			j.transit_code as transitCode,
+			j.transit_type as transitType,
+			min(b.begin_date) as beginDate,
+			max(b.end_date) as endDate,
+			m.begin_date as oldBeginDate,
+			m.end_date as oldEndDate,
+			case when m.list_id is NULL	
+					then 0				
+			  else 1
+			end as isDeviceSynch
+		FROM
+			regional a
+		join regional_emp_relation b
+			on a.regional_id=b.regional_id
+		join regional_arrange_relation f
+			on a.regional_id=f.regional_id
+		join arrange k
+			on f.arrange_id=k.arrange_id
+		join emp c
+			on b.emp_id=c.emp_id
+		join account d
+			on c.account_id=d.account_id
+		left join account_transit j
+			on c.account_id=j.account_id
+		left join org e
+			on a.org_id=e.org_id
+		join arrange_device g	
+			on f.arrange_id=g.arrange_id
+		join device h
+			on g.device_id=h.device_id
+		left join transit_list_result m
+			on d.account_code=m.account_code 
+			 and h.device_code=m.device_code
+			 and j.transit_code=m.transit_code
+			 and j.transit_type=m.transit_type
+			and m.project_id=#{projectId}
+		WHERE a.org_id =#{orgId}
+			AND a.regional_type = '02'
+			and c.status_code='01'
+			<if test="deviceId != null and deviceId!='' ">
+				and h.device_id=#{deviceId}
+			</if>
+			and 
+			case when 
+				c.status_code ='02'
+ 				then m.list_id is not null 
+			else 1=1
+			end
+		group by 
+			deviceId,
+			accountCode,
+			empName,
+			empStatusCode,
+			orgName,
+			deviceCode,
+			transitCode,
+			transitType,
+			oldBeginDate,
+			oldEndDate,
+			isDeviceSynch
+	</select>
+	<select id="getRegionalPriByDeviceId" resultType="com.bossbutler.pojo.TransitList">
+		SELECT DISTINCT
+			h.device_id as deviceId,
+			d.account_code as accountCode,
+			c.emp_name as empName,
+			c.status_code AS empStatusCode,
+			e.org_name as orgName,
+			h.device_code as deviceCode,
+			j.transit_code as transitCode,
+			j.transit_type as transitType,
+			min(b.begin_date) as beginDate,
+			max(b.end_date) as endDate,
+			m.begin_date as oldBeginDate,
+			m.end_date as oldEndDate,
+			case when m.list_id is NULL	
+				then 0				
+			else 1
+			end as isDeviceSynch
+		FROM
+			regional a
+		join regional_emp_relation b
+			on a.regional_id=b.regional_id
+		join regional_arrange_relation f
+			on a.regional_id=f.regional_id
+		join arrange k
+			on f.arrange_id=k.arrange_id
+		join emp c
+			on b.emp_id=c.emp_id
+		join account d
+			on c.account_id=d.account_id
+		left join account_transit j
+			on c.account_id=j.account_id
+		left join org e
+			on a.org_id=e.org_id
+		join arrange_device g	
+			on f.arrange_id=g.arrange_id
+		join device h
+			on g.device_id=h.device_id
+		left join transit_list_result m
+			on d.account_code=m.account_code 
+			 and h.device_code=m.device_code
+			 and j.transit_code=m.transit_code
+			 and j.transit_type=m.transit_type
+			and m.project_id=#{projectId}
+		WHERE a.org_id =#{orgId}
+			and c.status_code='01'
+			AND a.regional_type = '02'
+			
+		<if test="deviceId != null and deviceId!='' ">
+			and h.device_id=#{deviceId}
+		</if>
+			and 
+			case when 
+				c.status_code ='02'
+ 				then m.list_id is not null 
+			else 1=1
+			end
+			and j.transit_type !='02'
+		group by 
+			deviceId,
+			accountCode,
+			empName,
+			empStatusCode,
+			orgName,
+			deviceCode,
+			transitCode,
+			transitType,
+			oldBeginDate,
+			oldEndDate,
+			isDeviceSynch
+	</select>
+	
+	<select id="getRegionalPubByDeviceIdPageList" resultType="com.bossbutler.pojo.TransitList">
+		SELECT DISTINCT
+			b.device_id as deviceId,
+			d.account_code as accountCode,
+			c.emp_name as empName,
+			c.status_code AS empStatusCode,
+			g.org_name as orgName,
+			b.device_code as deviceCode,
+			f.transit_code as transitCode,
+			f.transit_type as transitType,
+			min(e.begin_date) as beginDate,
+			max(e.end_date) as endDate,
+			h.begin_date as oldBeginDate,
+			h.end_date as oldEndDate,
+			case when h.list_id is NULL	
+					then 0				
+			else 1
+			end as isDeviceSynch
+		FROM
+			arrange_device a
+		JOIN device b ON a.device_id = b.device_id
+		join emp c on 1=1
+		join account d
+			on c.account_id=d.account_id
+		join org_resource_relation e
+			on c.org_id=e.org_id
+		left join account_transit f
+			on d.account_id=f.account_id
+		left join org g
+			on c.org_id=g.org_id
+		left join transit_list_result h
+			on d.account_code=h.account_code 
+			 and b.device_code=h.device_code
+			 and f.transit_code=h.transit_code
+			 and f.transit_type=h.transit_type
+			and h.project_id=#{projectId}
+		
+		WHERE
+			b.device_name IS NOT NULL
+			and c.status_code='01'
+			and c.org_id=#{orgId}
+			and a.device_id=#{deviceId}
+			and e.begin_date IS NOT NULL
+			and e.end_date IS NOT NULL
+			and 
+			case when 
+				c.status_code ='02'
+ 			then h.list_id is not null 
+			else 1=1
+			end and f.transit_type !='02'
+		group by 
+			b.device_id,
+			d.account_code,
+			c.emp_name,
+			g.org_name,
+			b.device_code,
+			f.transit_code,
+			f.transit_type,
+			h.begin_date,
+			h.end_date
+	
+	</select>
+	
+	
+	<select id="getSyncedPageList" resultMap="transitList"
+		parameterType="string">
+		select
+		<include refid="transitListColumns" />
+		from transit_list_synced
+		<where>
+			project_id = #{projectId}
+			<if test="keyword != null and keyword != ''">
+				and emp_name like concat("%", #{keyword}, "%")
+			</if>
+			<if test="orgId!=null and orgId !=''">
+				and account_code in(
+					select  DISTINCT 
+						b.account_code 
+					from  emp a 
+					left join account b
+						on a.account_id=b.account_id
+					where a.org_id=#{orgId}
+			)
+			</if>
+		
+			<if test=" deviceId !='' and deviceId !=null">
+				and device_code=(
+					select DISTINCT 
+						device_code 
+					from device 
+					where device_id=#{deviceId}
+				)
+			
+			</if>
+		</where>
+	</select>
+	
+	<select id="getInvalidList" resultMap="transitList"
+		parameterType="string">
+		select
+		<include refid="transitListColumns" />
+		from transit_list_invalid
+		<where>
+			project_id = #{projectId}
+			<if test="keyword != null and keyword != ''">
+				and emp_name like concat("%", #{keyword}, "%")
+			</if>
+			<if test="orgId!=null and orgId !=''">
+				and account_code in(
+					select  DISTINCT 
+						b.account_code 
+					from  emp a 
+					left join account b
+						on a.account_id=b.account_id
+					where a.org_id=#{orgId}
+			)
+			</if>
+			<if test=" deviceId !='' and deviceId !=null">
+				and device_code=(
+					select DISTINCT 
+						device_code 
+					from device 
+					where device_id=#{deviceId}
+				)
+			
+			</if>
+		</where>
+	</select>
+	
+	<select id="getNoList" resultMap="transitList" parameterType="string">
+		select
+		<include refid="transitListColumns" />
+		from transit_list
+		<where>
+			project_id = #{projectId}
+			<if test="keyword != null and keyword != ''">
+				and emp_name like concat("%", #{keyword}, "%")
+			</if>
+			<if test="orgId!=null and orgId !=''">
+				and account_code in(
+					select  DISTINCT 
+						b.account_code 
+					from  emp a 
+					left join account b
+						on a.account_id=b.account_id
+					where a.org_id=#{orgId}
+			)
+			</if>
+		
+			<if test=" deviceId !='' and deviceId !=null">
+				and device_code=(
+					select DISTINCT 
+						device_code 
+					from device 
+					where device_id=#{deviceId}
+				)
+			
+			</if>
+		</where>
+	</select>
+	
+	<select id="synchCountGrDevice" resultType="com.bossbutler.pojo.TransitList">
+		SELECT
+			a.device_code as deviceCode,
+			IFNULL(a.count,0) as shouldSynchNum,
+			IFNULL(b.count,0) as synchNum,
+			IFNULL(f.count,0) as toBeSynchNum,
+  			IFNULL(g.count,0) as failSynchNum,
+			c.device_name deviceName,
+			d.arrange_id arrangeId,
+			e.arrange_code as arrangeCode,
+			e.arrange_name arrangeName
+		FROM
+		(
+			SELECT
+				device_code,
+				COUNT(*) AS count
+			FROM
+				transit_list_result_biz a
+			WHERE
+				a.project_id =#{projectId}
+				AND a.synch_flag = 1
+			GROUP BY
+				device_code
+		) a
+		LEFT JOIN (
+			SELECT
+				device_code,
+				COUNT(*) AS count
+			FROM
+				transit_list_result a
+			WHERE
+				a.project_id =#{projectId}
+			AND a.synch_flag = 1
+			GROUP BY
+				device_code
+		) b ON a.device_code = b.device_code
+		LEFT JOIN(
+			SELECT
+				device_code,
+				COUNT(*) AS count
+			FROM
+				transit_list a
+			WHERE
+				a.project_id =#{projectId}
+			AND a.synch_flag = 1
+			GROUP BY
+			device_code
+		)f  ON a.device_code = f.device_code
+		left join (
+			SELECT
+			device_code,
+			COUNT(*) AS count
+		FROM
+			transit_list_invalid a
+		WHERE
+			a.project_id = #{projectId}
+		AND a.synch_flag = 1
+		GROUP BY
+			device_code
+		)g  ON a.device_code = g.device_code
+			JOIN device c ON a.device_code = c.device_code
+			JOIN arrange_device d ON c.device_id = d.device_id 
+			join arrange e on d.arrange_id=e.arrange_id
+	
+	
+	</select>
+	
+	
+	
+	<select id="synchCountGrArrange" resultType="com.bossbutler.pojo.TransitList">
+		SELECT
+			
+			SUM(IFNULL(a.count,0)) as shouldSynchNum,
+			SUM(IFNULL(b.count,0)) as synchNum,
+			SUM(IFNULL(f.count,0)) as toBeSynchNum,
+  			SUM(IFNULL(g.count,0)) as failSynchNum,
+			e.arrange_code as arrangeCode,
+			d.arrange_id arrangeId,
+			e.arrange_name arrangeName
+		FROM
+		(
+			SELECT
+				device_code,
+				COUNT(*) AS count
+			FROM
+				transit_list_result_biz a
+			WHERE
+				a.project_id =#{projectId}
+				AND a.synch_flag = 1
+			GROUP BY
+				device_code
+		) a
+		LEFT JOIN (
+			SELECT
+				device_code,
+				COUNT(*) AS count
+			FROM
+				transit_list_result a
+			WHERE
+				a.project_id =#{projectId}
+			AND a.synch_flag = 1
+			GROUP BY
+				device_code
+		) b ON a.device_code = b.device_code
+		LEFT JOIN(
+			SELECT
+				device_code,
+				COUNT(*) AS count
+			FROM
+				transit_list a
+			WHERE
+				a.project_id =#{projectId}
+			AND a.synch_flag = 1
+			GROUP BY
+			device_code
+		)f  ON a.device_code = f.device_code
+		left join (
+			SELECT
+			device_code,
+			COUNT(*) AS count
+		FROM
+			transit_list_invalid a
+		WHERE
+			a.project_id = #{projectId}
+		AND a.synch_flag = 1
+		GROUP BY
+			device_code
+		)g  ON a.device_code = g.device_code
+			JOIN device c ON a.device_code = c.device_code
+			JOIN arrange_device d ON c.device_id = d.device_id 
+			join arrange e on d.arrange_id=e.arrange_id
+	group by 
+		d.arrange_id,
+		e.arrange_name,
+		e.arrange_code
+	
+	</select>
+	
+	
+	
+</mapper>

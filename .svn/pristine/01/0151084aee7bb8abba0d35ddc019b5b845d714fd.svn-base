@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	 		http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/mvc
+            http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<!-- 公共的JMS工具类，它可以进行消息发送 -->
+	<bean id="jmsSendTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsPooledConnectionFactory" />
+	</bean>
+
+	<!-- 公共的具有生命周期的JMS工具类， -->
+	<bean id="jmsTimeToLiveSendTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsPooledConnectionFactory" />
+		<property name="timeToLive" value="30000" />
+	</bean>
+
+	<!-- ibaoban的消息推送JMS工具类 -->
+	<bean id="ibaobanPushQueueSendTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsPooledConnectionFactory" />
+		<property name="defaultDestination" ref="ibaobanPushDestination" />
+		<property name="messageConverter" ref="objectMessageConverter" />
+	</bean>
+
+	<!-- baobanmanager的消息推送JMS工具类 -->
+	<bean id="baobanManagerPushQueueSendTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsPooledConnectionFactory" />
+		<property name="defaultDestination" ref="baobanmanagerPushDestination" />
+		<property name="messageConverter" ref="objectMessageConverter" />
+	</bean>
+
+	<!-- ARPM的消息推送JMS工具类 -->
+	<bean id="aRPMPushQueueSendTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsPooledConnectionFactory" />
+		<property name="defaultDestination" ref="aRPMPushDestination" />
+		<property name="messageConverter" ref="objectMessageConverter" />
+	</bean>
+
+	<!-- SHZX的消息推送JMS工具类 -->
+	<bean id="sHZXPushQueueSendTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsPooledConnectionFactory" />
+		<property name="defaultDestination" ref="sHZXPushDestination" />
+		<property name="messageConverter" ref="objectMessageConverter" />
+	</bean>
+
+	<!-- SJSM的消息推送JMS工具类 -->
+	<bean id="sJSMPushQueueSendTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsPooledConnectionFactory" />
+		<property name="defaultDestination" ref="sJSMPushDestination" />
+		<property name="messageConverter" ref="objectMessageConverter" />
+	</bean>
+
+	<!-- 系统日志Spring提供的JMS工具类，它可以进行消息发送 -->
+	<bean id="logQueueSendTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsPooledConnectionFactory" />
+		<property name="defaultDestination" ref="logQueueDestination" />
+		<property name="messageConverter" ref="objectMessageConverter" />
+	</bean>
+
+	<!-- 短信消息发送 -->
+	<bean id="sendMobileMessageTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsPooledConnectionFactory" />
+		<property name="defaultDestination" ref="sendMobileMessageDestination" />
+		<property name="messageConverter" ref="objectMessageConverter" />
+	</bean>
+</beans>

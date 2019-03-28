@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.InvitationMapper">
+  <resultMap id="invitationM" type="com.bossbutler.pojo.system.Invitation" >
+    <id column="invitation_id" property="invitationId" jdbcType="BIGINT" />
+    <result column="invitation_code" property="invitationCode" jdbcType="VARCHAR" />
+    <result column="source_id" property="sourceId" jdbcType="BIGINT" />
+    <result column="org_id" property="orgId" jdbcType="BIGINT" />
+    <result column="mobilephone" property="mobilephone" jdbcType="VARCHAR" />
+    <result column="invitation_type" property="invitationType" jdbcType="CHAR" />
+    <result column="contents" property="contents" jdbcType="VARCHAR" />
+    <result column="check_value" property="checkValue" jdbcType="VARCHAR" />
+    <result column="status_code" property="statusCode" jdbcType="CHAR" />
+    <result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+  </resultMap>
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="InvitationColumns">
+	    <![CDATA[
+        	invitation_id,
+        	invitation_code,
+        	org_id,
+        	source_id,
+        	mobilephone,
+        	contents,
+        	invitation_type,       
+        	status_code,      	 
+        	status_time,
+        	create_time,
+        	update_time,       
+        	data_version      
+	    ]]>
+	</sql>
+	<select id="queryInvitationByCode" parameterType="String" resultMap="invitationM">
+		select  <include refid="InvitationColumns" /> 
+		from invitation where invitation_code = #{code}
+	</select>
+	<update id="updateInvitationForReg" parameterType="hashmap">
+		update invitation set status_code=#{status_code},status_time=#{status_time},update_time=#{update_time}
+		where invitation_code=#{invitation_code}
+	</update>
+	<insert id="insert" parameterType="invitation">
+    insert into invitation
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="invitationId != null" >
+        invitation_id,
+      </if>
+      <if test="invitationCode != null" >
+        invitation_code,
+      </if>
+      <if test="sourceId != null" >
+        source_id,
+      </if>
+      <if test="orgId != null" >
+        org_id,
+      </if>
+      <if test="mobilephone != null" >
+        mobilephone,
+      </if>
+      <if test="invitationType != null" >
+        invitation_type,
+      </if>
+      <if test="contents != null" >
+        contents,
+      </if>
+      <if test="checkValue != null" >
+        check_value,
+      </if>
+      <if test="statusCode != null" >
+        status_code,
+      </if>
+      <if test="statusTime != null" >
+        status_time,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="invitationId != null" >
+        #{invitationId,jdbcType=BIGINT},
+      </if>
+      <if test="invitationCode != null" >
+        #{invitationCode,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceId != null" >
+        #{sourceId,jdbcType=BIGINT},
+      </if>
+      <if test="orgId != null" >
+        #{orgId,jdbcType=BIGINT},
+      </if>
+      <if test="mobilephone != null" >
+        #{mobilephone,jdbcType=VARCHAR},
+      </if>
+      <if test="invitationType != null" >
+        #{invitationType,jdbcType=CHAR},
+      </if>
+      <if test="contents != null" >
+        #{contents,jdbcType=VARCHAR},
+      </if>
+      <if test="checkValue != null" >
+        #{checkValue,jdbcType=VARCHAR},
+      </if>
+      <if test="statusCode != null" >
+        #{statusCode,jdbcType=CHAR},
+      </if>
+      <if test="statusTime != null" >
+        #{statusTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+	</insert>
+</mapper>

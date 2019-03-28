@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.chart.ChartMapper">
+	
+	<select id="getTransferInfo" resultType="String">
+		SELECT count(1) from rpt_contract_current
+	</select>
+	<!-- 报表以前的 -->
+	<!-- <select id="getTrafficeCurrent" resultType="String">
+		SELECT sum(param_value) from rpt_transit_current where project_id=#{project_id} and (param_code='05201' or param_code='05202' or param_code='05203' or param_code='05204')
+	</select> -->
+	
+	<select id="getTrafficeCurrent" resultType="String">
+		SELECT
+			count(*)
+		FROM
+			transit_log_biz
+		WHERE
+			project_id =#{projectId}
+		AND DATE_FORMAT(result_time, '%Y-%m-%d')=#{date}
+	</select>
+	<select id="getTrafficeYesterdayCurrent" resultType="String">
+		SELECT sum(report_data) from rpt_transit_report where project_id=#{project_id} and (report_code='05301' or report_code='05302' or report_code='05303' or report_code='05304') and DATE_FORMAT(period_begin,'%Y-%m-%d')=#{startTime}
+	</select>
+	<!-- 报表以前的 -->
+	<!-- <select id="getTrafficeType" resultType="com.bossbutler.pojo.chart.RptModel">
+		SELECT sum(param_value) value,create_time name,param_code `group`
+		from 
+			rpt_transit_current
+		where 1=1
+		<if test="type=='01' ">
+			and (param_code='05201' or param_code='05202' or param_code='05203' or param_code='05204') 
+		</if>
+		<if test="type=='02' ">
+			and (param_code='05205' or param_code='05206' or param_code='05207' or param_code='05208')
+		</if>
+		and project_id=#{project_id}
+		GROUP BY  param_code
+	</select>
+	-->
+	
+	
+	<select id="getTrafficeTypePT" resultType="java.util.HashMap">
+		SELECT
+			sum(
+				CASE
+				WHEN person_type = '00' THEN
+					1
+				ELSE
+					0
+				END
+			) AS inside,
+			sum(
+				CASE
+				WHEN person_type ='01' THEN
+					1
+				ELSE
+					0
+				END
+			) AS longside,
+			sum(
+				CASE
+				WHEN person_type IN ('02', '03', '04', '05') THEN
+					1
+				ELSE
+					0
+				END
+			) AS shortside,
+			sum(
+				CASE
+				WHEN person_type IN (
+					'01',
+					'02',
+					'03',
+					'04',
+					'05',
+					'00'
+				)THEN
+					0
+				ELSE
+					1
+				END
+			)AS otherside,
+			sum(
+				CASE
+				WHEN transit_type = '00' THEN
+					1
+				ELSE
+					0
+				END
+			)AS chatCode,
+			sum(
+				CASE
+				WHEN transit_type = '01' THEN
+					1
+				ELSE
+					0
+				END
+			)AS icCode,
+			sum(
+				CASE
+				WHEN transit_type = '03' THEN
+					1
+				ELSE
+					0
+				END
+			)AS pwCode,
+			sum(
+				CASE
+				WHEN transit_type IN ('00', '01','03') THEN
+					0
+				ELSE
+					1
+				END
+			)AS otherCode
+		FROM
+			transit_log_biz
+		WHERE
+			project_id =#{projectId}
+			AND DATE_FORMAT(result_time, '%Y-%m-%d') =#{date}
+	</select>
+	<select id="getResidentTrafficePN" resultType="com.bossbutler.pojo.chart.TrafficModel">
+		SELECT
+			COUNT(
+				DISTINCT CASE
+				WHEN b.account_id IS NULL THEN
+					person_id
+				ELSE
+					NULL
+				END
+			) AS tTenPerTotal,
+			COUNT(
+				DISTINCT CASE
+				WHEN b.account_id IS NOT NULL THEN
+					person_id
+				ELSE
+					NULL
+				END
+			) AS tManaPerTotal
+		FROM
+			transit_log_biz a
+		LEFT JOIN (
+			SELECT DISTINCT
+				a.account_id
+			FROM
+				emp a
+			JOIN emp_project_relation b ON a.emp_id = b.emp_id
+			LEFT JOIN org c ON c.org_id = a.org_id
+			WHERE
+				b.project_id =#{projectId}
+				AND c.duty_type = '0301'
+			) b ON a.person_id = b.account_id
+		WHERE
+			a.project_id =#{projectId}
+			and a.person_type = '00'
+			AND DATE_FORMAT(a.result_time, '%Y-%m-%d') =#{date}
+	</select>
+	
+	
+	<select id="getShVisiTrafficePN" resultType="com.bossbutler.pojo.chart.TrafficModel">
+		SELECT
+			count(
+				DISTINCT CASE
+					WHEN a.person_type = '01' THEN
+						a.person_id
+					ELSE
+						NULL
+				END
+			) AS appApply,
+			count(
+				DISTINCT CASE
+					WHEN a.person_type = '02' THEN
+						a.person_id
+					ELSE
+						NULL
+				END
+			) AS reception,
+			count(
+				DISTINCT CASE
+					WHEN a.person_type = '03' THEN
+						a.person_id
+					ELSE
+						NULL
+				END
+			) AS selfHelp,
+			count(
+				DISTINCT CASE
+				WHEN a.person_type = '04' THEN
+					a.person_id
+				ELSE
+					NULL
+				END
+			) AS smallProgram
+		FROM
+			(SELECT
+				a.person_id,
+				min(a.person_type) AS person_type
+			FROM
+				(SELECT
+					a.person_id,
+					CASE
+						WHEN a.person_type = '02' THEN
+							'01'
+						WHEN a.person_type = '03' THEN
+							'02'
+						WHEN a.person_type = '04' THEN
+							'03'
+						WHEN a.person_type = '05' THEN
+							'04'
+					END AS person_type
+				FROM
+					transit_log_biz a
+				WHERE
+					a.project_id =#{projectId}
+					AND DATE_FORMAT(a.result_time, '%Y-%m-%d') =#{date}
+					AND a.person_type IN ('02', '03', '04', '05')
+				) a
+			GROUP BY
+				a.person_id
+		) a
+	</select>
+	
+	<select id="getLongVisiTrafficePN" resultType="com.bossbutler.pojo.chart.TrafficModel">
+		SELECT
+			count(
+				DISTINCT CASE
+					WHEN a.apply_type = '01' THEN
+						a.person_id
+					ELSE
+						NULL
+				END
+			) AS engineer,
+			count(
+				DISTINCT CASE
+					WHEN a.apply_type = '02' THEN
+						a.person_id
+					ELSE
+						NULL
+				END
+			) AS express,
+			count(
+				DISTINCT CASE
+					WHEN a.apply_type = '03' THEN
+						a.person_id
+				ELSE
+					NULL
+				END
+			) AS takeout,
+			count(
+				DISTINCT CASE
+					WHEN a.apply_type = '04' THEN
+						a.person_id
+					ELSE
+						NULL
+				END
+			) AS otherProple
+		FROM
+			(SELECT
+				person_id,
+				min(apply_type) AS apply_type
+			FROM
+				(SELECT
+					a.person_id,
+					CASE
+						WHEN b.apply_type = '12001' THEN
+							'01'
+						WHEN b.apply_type = '12002' THEN
+							'02'
+						WHEN b.apply_type = '12003' THEN
+							'03'
+						ELSE
+							'04'
+					END AS apply_type
+				FROM
+					transit_log_biz a
+				LEFT JOIN visitor_apply b ON a.apply_id = b.relation_id
+				WHERE
+					a.project_id = #{projectId}
+					AND DATE_FORMAT(a.result_time, '%Y-%m-%d') =#{date}
+					AND a.person_type = '01'
+				) a
+			GROUP BY
+				person_id
+		) a
+	
+	</select>
+	
+	<!--以前的报表 -->
+	<!-- <select id="getTrafficeCurrentList" resultType="com.bossbutler.pojo.chart.RptModel">
+		SELECT param_value value,create_time name
+		from 
+			rpt_transit_current
+	where project_id=#{project_id} 
+	and (param_code='05205' or param_code='05206' or param_code='05207' or param_code='05208')
+	and DATE_FORMAT(create_time,'%Y-%m-%d')=#{currentDate}
+	</select> -->
+	
+	<select id="getTrafficeCurrentList" resultType="com.bossbutler.pojo.chart.RptModel">
+		SELECT
+			DATE_FORMAT(result_time, '%H') as name,
+			count(*) value 
+		FROM
+			transit_log_biz
+		WHERE
+			project_id =#{projectId}
+			and DATE_FORMAT(result_time, '%Y-%m-%d') =#{date}
+		group by name
+		order by name
+	</select>
+	
+	<select id="getBuildTotal" resultType="com.bossbutler.pojo.chart.TrafficModel">
+		SELECT
+			a.perTotal-a.bManaPerTotal AS bTenPerTotal,
+			a.bManaPerTotal as bManaPerTotal
+		FROM
+		(
+			SELECT
+				count(DISTINCT a.account_id) as perTotal,
+				count(DISTINCT case when d.duty_type='0301' then
+					a.account_id
+				else 
+					null
+        		end) as bManaPerTotal
+			FROM
+				emp a
+			JOIN emp_project_relation b ON a.emp_id = b.emp_id
+			JOIN account c ON a.account_id = c.account_id
+			JOIN org d ON a.org_id = d.org_id
+			LEFT JOIN (
+				SELECT DISTINCT
+					org_id
+				FROM
+					org_resource_relation
+				WHERE
+		<![CDATA[			begin_date <=#{date} ]]>
+					AND end_date >= #{date}
+				)e ON a.org_id = e.org_id
+				WHERE
+					a.status_code = '01'
+					AND b.project_id =#{projectId}
+					and (e.org_id is not null || d.duty_type='0301')
+				
+		) a
+	
+	</select>
+	
+	<select id="getBLongVisiTotal" resultType="java.lang.String">
+		SELECT
+			count(DISTINCT a.visitor_id) as bLongVisiTotal
+		FROM
+			visitor_apply a
+		JOIN visitor b ON a.visitor_id = b.visitor_id
+		<!-- LEFT JOIN emp_project_relation c ON a.project_id = c.project_id
+		LEFT JOIN emp d ON c.emp_id = d.emp_id
+		LEFT JOIN account e ON d.account_id = e.account_id
+			AND b.mobilephone = e.mobilephone -->
+		WHERE
+			a.project_id = #{projectId}
+		<![CDATA[	AND a.begin_date <=#{date} ]]>
+			AND a.end_date >=#{date}
+			and b.visitor_type='01'
+			and b.status_code='01'
+			<!-- and e.account_id IS NULL -->
+	</select>
+	<select id="">
+	
+	</select>
+	<select id="getNoActiveTenantTotal" resultType="java.lang.String">
+		SELECT
+			IFNULL(count(DISTINCT d.account_id),0) as noActiveTenTotal
+		FROM
+			emp a
+		INNER JOIN emp_project_relation b
+			on a.emp_id=b.emp_id
+		INNER JOIN org c ON a.org_id = c.org_id
+		INNER JOIN account d
+			on a.account_id=d.account_id
+		where
+			a.status_code='01'
+			and c.duty_type='0302'
+			<if test="projectId !=null and projectId !=''">
+				and b.project_id=#{projectId}
+			</if>	
+			<if test="days !=null and days !=''">
+			<![CDATA[	and datediff(#{date},a.active_time) > #{days} ]]>
+			</if>
+	</select>
+	
+	<select id="getNoActiveVisitorTotal" resultType="java.lang.String">
+		SELECT
+			IFNULL(count(DISTINCT b.visitor_id),0) as noActivelVisiTotal
+		FROM
+			visitor_apply a
+		INNER JOIN visitor b
+			on a.visitor_id=b.visitor_id
+		left join emp_project_relation c
+			on a.project_id=c.project_id
+		left join emp d
+			on c.emp_id=d.emp_id
+		left join account e
+			on d.account_id=e.account_id and e.mobilephone=b.mobilephone
+		where
+			a.source_type='01'
+			<![CDATA[	and datediff(#{date},a.active_time) > #{days} ]]>
+			<if test="projectId !=null and projectId !=''">
+				and a.project_id=#{projectId}
+			</if>	
+			and e.account_id is null 
+	</select>
+</mapper>

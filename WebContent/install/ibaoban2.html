@@ -1,0 +1,150 @@
+<!DOCTYPE>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+    <title>包办网</title>
+    <link href="../favicon.ico" type="image/x-icon" rel="icon">
+    <link rel="stylesheet" href="styles/ibaoban.css">
+    <script src="scripts/zepto.min.js"></script>
+</head>
+
+<body class="">
+    <div class="wrapper">
+        <div class="lcontent">
+            <img id="img" class="limg" src="styles/images/front-logo.png" alt="">
+        </div>
+        <div class="dline">
+            <span class="dtext" id="dtext">包办网</span>
+        </div>
+        <div class="dwrapper" id="ibaoban">
+            <a class="abtn" href="https://itunes.apple.com/us/app/qq/id444934666?mt=8">
+                <div class="dbg" id="iphone">
+                    <!-- <img src="../../modules/download-page/imgs/iphone.png" style="width:25px;"/> -->
+                    <span class="icon iphone"></span>
+                </div>
+                <span>IOS</span>
+            </a>
+            <a class="abtn rbtn" href="apk/ibaoban.apk">
+                <div class="dbg" id="android">
+                    <!-- <img src="../../modules/download-page/imgs/android.png" style="width:25px;"/> -->
+                    <span class="icon android"></span>
+                </div>
+                <span>Android</span>
+            </a>
+        </div>
+
+        <div class="dwrapper" id="vbaoban">
+            <a class="abtn" href="https://itunes.apple.com/app/qi-yeqq-ban-gong-ban/id559640751?ls=1&mt=8">
+                <div class="dbg iphone" id="iphone">
+                    <!-- <img src="../../modules/download-page/imgs/iph.png" style="width:25px;"/> -->
+                    <span class="icon iphone"></span>
+                </div>
+                <span>IOS</span>
+            </a>
+
+
+            <a class="abtn rbtn" href="apk/vbaoban.apk">
+                <div class="dbg" id="android">
+                    <!-- <img src="../../modules/download-page/imgs/and.png" style="width:25px;"/> -->
+                    <span class="icon android"></span>
+                </div>
+                <span>Android</span>
+            </a>
+        </div>
+
+        <footer class="footer">
+            <div class="dbottom">
+                <span class="warn">!</span> <span></span>
+            </div>
+        </footer>
+    </div>
+    <script type="text/javascript">
+		//flag 1:进行客户端检测直接下载  否则不检测
+		//type 0:ibaoban  1:vbaoban
+		var timeout = null,
+			timer = 1000,
+			downurl = [{
+				"packageUrl": "baoban:ibaoban",
+				"downloadUrl": "https://itunes.apple.com/us/app/qq/id444934666?mt=8"
+			},{
+				"packageUrl": "baoban://ibaoban_apk_intalled_scheme",
+				"downloadUrl": "apk/ibaoban.apk"
+			},{
+				"packageUrl": "baoban:vbaoban",
+				"downloadUrl": "https://itunes.apple.com/app/qi-yeqq-ban-gong-ban/id559640751?ls=1&mt=8"
+			},{
+				"packageUrl": "baoban:vbaoban",
+				"downloadUrl": "apk/vbaoban.apk"
+			}];
+		function getFlag(name){
+			var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+			var url = window.location.search.substr(1).match(reg);
+			if( url != null){
+				return unescape(url[2]);
+			}else{
+				return null;
+			}
+		};
+		function downApp(time,index){
+			var timeOpen = Date.now();
+			if(!time || timeOpen-time < timer + 200){
+				location.href =  downurl[index].downloadUrl;
+			}else{
+				return;
+			}
+		};
+		function openApp(index){
+			var time = Date.now();
+			var ifr = document.createElement("iframe");
+			ifr.setAttribute('src', downurl[index].packageUrl);
+			ifr.setAttribute('style', 'display:none');
+			document.body.appendChild(ifr);
+
+			timeout = setTimeout(function(){
+				downApp(time,index);
+			},1000);
+		};
+		var _type = getFlag('type');
+		//if(getFlag('flag') == 1){
+        if(true){
+			var userAgentInfo = navigator.userAgent,app = navigator.appVersion;
+		    var isAndroid = userAgentInfo.indexOf('Android') > -1 || userAgentInfo.indexOf('Linux') > -1; //android终端或者uc浏览器
+		    var isIOS = !!userAgentInfo.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+		    if(isAndroid){
+		    	//if(_type == 1){openApp(1);}
+				if(_type == 0){
+		    		openApp(3);
+		    	}else{
+					openApp(1);
+				}
+		    }else if(isIOS){
+		    	//if(_type == 1){openApp(0);}
+		    	if(_type == 0){
+		    		openApp(2);
+		    	}else{
+					openApp(0);
+				}
+		    }
+		}
+		var type = getFlag('type');
+		if(type != 0){
+			document.getElementById('dtext').innerHTML = '爱包办';
+			document.getElementById('img').src = 'styles/images/front-logo.png'; 
+			document.getElementById('vbaoban').style.display = 'none';
+			document.getElementById('ibaoban').style.display = 'block';
+		}
+		else{
+			document.getElementById('dtext').innerHTML = '包办管家';
+			document.getElementById('img').src = 'styles/images/front-logo.png'; 
+			document.getElementById('ibaoban').style.display = 'none';
+			document.getElementById('vbaoban').style.display = 'block';
+		}
+		$('.abtn').touch(function(){
+			return;
+		});
+	</script>
+</body>
+
+</html>

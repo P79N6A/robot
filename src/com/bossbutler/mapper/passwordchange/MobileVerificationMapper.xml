@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.passwordchange.MobileVerificationMapper">
+	<select id="querymobile" parameterType="String" resultType="passwordchange">
+		select case when count(*) is null then '0' else count(*) end as count
+		from account a where
+		a.mobilephone=#{mobile}
+		<if test="accountId != null and accountId != '' ">
+			and a.account_id=#{accountId}
+		</if>
+	</select>
+	<update id="updatePassword">
+		update account set password=#{password},update_time=sysdate() where
+		account_id=#{accountId}
+	</update>
+	<update id="updatephone">
+		update account set mobilephone=#{phone},update_time=sysdate() where
+		account_id=#{accountId}
+	</update>
+	<update id="updateEmpPhone">
+		update emp set mobilephone=#{phone},update_time=sysdate(),operator_id=#{accountId}  where
+		account_id=#{accountId}
+	</update>
+</mapper>

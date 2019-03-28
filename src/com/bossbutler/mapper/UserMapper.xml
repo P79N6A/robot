@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.UserMapper">
+	<select id="queryUser" parameterType="hashmap" resultType="User">
+		select id, name, phone,email,user_type from tb_user where phone = #{name} and
+		pwd = #{pwd}
+	</select>
+	<insert id="saveUser" parameterType="User">
+		insert into tb_user (
+		name, phone,pwd) values ( #{name}, #{phone},#{pwd})
+	</insert>
+	<select id="queryUserList" parameterType="hashmap" resultType="User">
+		select id, name, phone,email,user_type from tb_user t 
+	</select>
+</mapper>

@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.bossbutler.mapper.bill.MyBillMapper">
+	<resultMap id="billListModel" type="com.bossbutler.pojo.bill.MyBillListModel">
+		<result property="billId" column="bill_id" />
+		<result property="billCode" column="bill_code" />
+		<result property="billDesc" column="bill_desc" />
+		<result property="billPayDate" column="pay_date" />
+		<result property="billPayAmount" column="pay_amount" />
+		<result property="billInscribe" column="bill_inscribe" />
+		<result property="billRemark" column="bill_notice" />
+		<result property="billName" column="bill_name"/>
+		<result property="billCreateTime" column="bill_date" />
+		<result property="billType" column="pay_status" />
+		<result property="billStatus" column ="status_code"/>
+	</resultMap>
+
+	<resultMap id="billDetailM" type="com.bossbutler.pojo.bill.MyBillDetailModel">
+		<result property="contractId" column="contract_id"/>
+		<result property="statusCode" column="status_code"/>
+		<result property="rentUnit" column="contract_desc" />
+		<result property="customerName" column="customer_name"/>
+		<result property="actualAmount" column="actual_amount"/>
+		<result property="arrearsAmount" column="arrears_amount" />
+		<result property="deductAmount" column="deduct_amount"/>
+		<result property="billPayAmount" column="pay_amount" />
+		<result property="billPayDate" column="pay_date" />
+		<result property="roomInfo" column="bill_desc" />
+		<result property="accountInfo" column="bank_desc" />
+		<result property="bankInfo" column="bank_name" />
+		<result property="bankNum" column="bank_num" />
+		<result property="billBeginDate" column="begin_date"/>
+		<result property="billEndDate" column="end_date"/>
+	</resultMap>
+
+	<resultMap id="BillDebtorM" type="com.bossbutler.pojo.bill.BillDebtorModel">
+		<result property="beginDate" column="begin_date" />
+		<result property="endDate" column="end_date" />
+		<result property="chargeName" column="charge_name" />
+		<result property="amount" column="amount" />
+	</resultMap>
+
+	<resultMap id="billM" type="com.bossbutler.pojo.bill.BillPoJo">
+		<result property="billId" column="bill_id" />
+		<result property="billCode" column="bill_code" />
+		<result property="contractId" column="contract_id" />
+		<result property="orgId" column="org_id" />
+		<result property="customerId" column="customer_id" />
+		<result property="customerName" column="customer_name" />
+		<result property="billType" column="bill_type" />
+		<result property="autoFlag" column="auto_flag" />
+		<result property="billDesc" column="bill_desc" />
+		<result property="beginDate" column="begin_date" />
+		<result property="endDate" column="end_date" />
+		<result property="initialAmount" column="initial_amount" />
+		<result property="actualAmount" column="actual_amount" />
+		<result property="arrearsAmount" column="arrears_amount" />
+		<result property="deductAmount" column="deduct_amount" />
+		<result property="payAmount" column="pay_amount" />
+		<result property="address" column="address" />
+		<result property="bankId" column="bank_id" />
+		<result property="billDate" column="bill_date" />
+		<result property="payDate" column="pay_date" />
+		<result property="settleDate" column="settle_date" />
+		<result property="remark" column="remark" />
+		<result property="orderId" column="order_id" />
+		<result property="statusCode" column="status_code" />
+		<result property="statusTime" column="status_time" />
+		<result property="createTime" column="create_time" />
+		<result property="updateTime" column="update_time" />
+		<result property="operatorId" column="operator_id" />
+		<result property="billName" column="bill_name" />
+		<result property="billHeader" column="bill_header" />
+		<result property="billInscribe" column="bill_inscribe" />
+		<result property="contractCode" column="contract_code" />
+	</resultMap>
+
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="billColumns">
+	   <![CDATA[
+        	a.bill_id,
+			a.bill_code,
+			a.bill_name,
+			a.contract_id,
+			a.org_id,
+			a.auto_flag,
+			a.customer_id,
+			a.customer_name,
+			a.bill_type,
+			a.bill_desc,
+			a.begin_date,
+			a.end_date,
+			a.initial_amount,
+			a.actual_amount,
+			a.arrears_amount,
+			a.deduct_amount,
+			a.pay_amount,
+			a.address,
+			a.bank_id,
+			a.bill_date,
+			a.pay_date,
+			a.settle_date,
+			a.remark,
+			a.order_id,
+			a.status_code,
+			a.status_time,
+			a.create_time,
+			a.update_time,
+			a.bill_header,
+			a.bill_inscribe,
+			a.operator_id
+	    ]]>
+	</sql>
+	<!-- <select id="getPageList" resultMap="billM"> SELECT <include refid="billColumns" 
+		/> , b.contract_desc as contractDesc, b.contract_code, c.login_name as operatorName 
+		from bill a left join contract b on a.contract_id=b.contract_id left join 
+		account c on a.operator_id=c.account_id <where> <if test="model.billId !=null"> 
+		and a.bill_id=#{model.billId} </if> <if test="model.billCode !=null and model.billCode 
+		!='' "> and a.bill_code=#{model.billCode} </if> <if test="model.keyword !=null 
+		and model.keyword !='' "> and a.customer_name like concat("%",#{model.keyword},"%") 
+		</if> <if test="model.billDesc !=null and model.billDesc !='' "> and a.bill_desc 
+		like concat("%",#{model.billDesc},"%") </if> <if test="model.autoFlag !=null 
+		and model.autoFlag !='' "> and a.auto_flag=#{model.autoFlag} </if> <if test="model.customerId 
+		!=null "> and a.customer_id =#{model.customerId} </if> <if test="model.contractId 
+		!=null"> and a.contract_id=#{model.contractId} </if> <if test="model.contractCode 
+		!=null and model.contractCode!='' "> and b.contract_code=#{model.contractCode} 
+		</if> <if test="model.billType !=null and model.billType!='' "> and a.bill_type=#{model.billType} 
+		</if> <if test="model.statusCode !=null and model.statusCode !='' "> and 
+		a.status_code=#{model.statusCode} </if> <if test="model.billDateDesc !=null 
+		and model.billDateDesc !='' "> and DATE_FORMAT(bill_date,"%Y-%m")=#{model.billDateDesc} 
+		</if> <if test="model.billDateBegin !=null and model.billDateBegin !=''"> 
+		and bill_date>#{model.billDateBegin} </if> <if test="model.billDateEnd !=null 
+		and model.billDateEnd !=''"> and bill_date <![CDATA[ < ]]> #{model.billDateEnd} 
+		</if> <if test="model.orgId !=null"> and a.org_id=#{model.orgId} </if> </where> 
+		</select> -->
+
+	<select id="queryList" resultMap="billListModel"
+		parameterType="com.bossbutler.pojo.bill.BillPoJo">
+		SELECT
+			bill_id,
+			bill_code ,
+			bill_desc ,
+			bill.bill_notice,
+			bill.bill_name,
+			bill.bank_id,
+			bill.bill_inscribe,
+			bill.bill_date,
+			case bill.status_code when '07' then '1' else '0' end as status_code,
+			
+			DATE_FORMAT(bill.pay_date,'%Y年%m月%d日') as pay_date ,
+			pay_amount,
+			o.pay_status
+		FROM
+			bill
+		JOIN contract ON contract.contract_id = bill.contract_id
+		INNER JOIN account ON account.mobilephone = contract.link_phone
+		INNER JOIN `order` AS o ON o.order_id = bill.order_id
+		WHERE
+			account.account_id =#{model.accountId}
+			and bill.status_code in('06','07')
+			<if test="billType == '01'">
+				and o.pay_status in ('01','03')
+			</if>
+	</select>
+	
+	
+	<select id="queryList2" resultMap="billListModel"
+		parameterType="com.bossbutler.pojo.bill.BillPoJo">
+		SELECT
+			bill_id,
+			bill_code ,
+			bill_desc ,
+			bill.bill_notice,
+			bill.bill_name,
+			bill.bank_id,
+			bill.bill_inscribe,
+			bill.bill_date,
+			case bill.status_code when '07' then '1' else '0' end as status_code,
+			
+			DATE_FORMAT(bill.pay_date,'%Y年%m月%d日') as pay_date ,
+			pay_amount,
+			o.pay_status
+		FROM
+			bill
+		JOIN contract ON contract.contract_id = bill.contract_id
+		join customer on contract.customer_id=customer.customer_id
+		INNER JOIN `order` AS o ON o.order_id = bill.order_id
+		WHERE
+			bill.status_code in('06','07')
+			and customer.project_org in(
+				<foreach collection="model.orgIds" item="item" separator=",">
+					#{item}
+				</foreach>
+			)
+			<if test="billType == '01'">
+				and o.pay_status in ('01','03')
+			</if>
+		order by bill.bill_date desc
+	</select>
+
+	<select id="queryBillDetail" parameterType="String" resultMap="billDetailM">
+		SELECT
+			bill.status_code,
+			bill.customer_name,
+			bill.actual_amount,
+			bill.contract_id,
+			IFNULL(bill.arrears_amount,0.00) as arrears_amount,
+			IFNULL(bill.deduct_amount,0.00)as deduct_amount,
+			IFNULL(bill.pay_amount,0.00) as pay_amount,
+			DATE_FORMAT(bill.begin_date, '%Y/%m/%d') AS begin_date,
+			DATE_FORMAT(bill.end_date, '%Y/%m/%d') AS end_date,
+			DATE_FORMAT(bill.pay_date, '%Y/%m/%d') AS pay_date,
+			
+			contract.contract_desc,
+			contract.address,
+			bill.bill_desc,
+			bill.bill_type as billType,
+			bank.bank_desc,
+			bank.bank_name,
+			bank.bank_num,
+			project.project_id AS projectId,
+			project.project_name AS projectName,
+			IFNULL(o.paid_amount,0.00) AS paidAmount,
+			IFNULL(o.pend_amount,0.00) AS pendAmount
+		FROM
+			bill
+		INNER JOIN bank 
+			ON bank.bank_id =bill.bank_id
+		INNER JOIN contract 
+			ON contract.contract_id =bill.contract_id
+		left join org_project_relation opr
+			on bill.org_id=opr.org_id
+		left join project
+			on opr.project_id=project.project_id
+		left join `order` o
+			on bill.order_id=o.order_id
+		WHERE
+			bill.bill_id = #{billId}
+	</select>
+
+	<select id="queryDebtorListByBillId" resultMap="BillDebtorM">
+		SELECT 
+			DATE_FORMAT(begin_date,"%y年%m月") as beginDateStr,
+			DATE_FORMAT(end_date,"%y年%m月") as endDateStr,
+			charge_name,
+			amount
+		from bill_debtor
+		WHERE bill_id = #{billId}
+		and debtor_type = #{type}
+	</select>
+	
+	<update id='updateBillstaCode' parameterType="String">
+	UPDATE bill
+		SET status_code =#{model.statusCode},
+		status_time =NOW(),
+		update_time = NOW(),
+		<if test="model.remark !='' and model.remark !=null">
+		 	remark=  #{model.remark},
+		</if>
+		operator_id =  #{model.operatorId}
+		WHERE bill_id = #{model.billId}
+	</update>
+	
+	<select id="queryProjectList" resultMap="billListModel">
+	
+		SELECT
+		DISTINCT
+			b.project_id as id,
+			c.project_name as name,
+			GROUP_CONCAT(a.org_id) as value
+		FROM
+			emp a
+		join emp_project_relation b
+			on a.emp_id=b.emp_id
+		join project c
+			on b.project_id=c.project_id
+		left join account d
+			on a.account_id=d.account_id
+		left join customer e
+			on a.org_id=e.project_org and d.mobilephone=e.mobilephone
+   		left join org f
+			on a.org_id=f.org_id and a.account_id=f.admin_id
+		WHERE
+			a.account_id =#{accountId}
+			and (e.customer_id is not null or f.org_id is not null)
+		group by 
+			b.project_id ,
+			c.project_name
+  		
+	
+	</select>
+</mapper>

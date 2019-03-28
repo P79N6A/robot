@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<!-- wq 注意： id路径第一个位不允许是斜杠-->
+	<form id="admin/login">
+		<field name="loginName" require="true" regx="" cn="账号">
+		</field>
+		<field name="pwd" require="true" regx="" cn="密码">
+		</field>
+		<field name="oldToken" require="false" regx="" cn="登录令牌">
+		</field>
+	</form>
+	<!-- horizon 这是测试demo可以忽略或者覆盖 -->
+	<form id="user/password/modify">
+		<field name="validation_code" require="true" regx="" cn="验证码">
+		</field>
+		<field name="user_login_name" require="true" regx="" cn="登录名">
+		</field>
+		<field name="old_user_password" require="true" regx="" cn="旧密码">
+		</field>
+		<field name="user_password" require="true" regx="" cn="新密码">
+		</field>
+		<field name="confirm_user_password" require="true" regx="" cn="确认新密码">
+		</field>
+	</form>
+</root>

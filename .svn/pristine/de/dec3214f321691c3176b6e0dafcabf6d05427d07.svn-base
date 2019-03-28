@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.visitor.TerminalMapper">
+  <resultMap id="BaseResultMap" type="com.bossbutler.pojo.visitor.Terminal" >
+    <id column="terminal_id" property="terminalId" jdbcType="BIGINT" />
+    <result column="terminal_name" property="terminalName" jdbcType="CHAR" />
+    <result column="mac_address" property="macAddress" jdbcType="CHAR" />
+    <result column="project_code" property="projectCode" jdbcType="BIGINT" />
+    <result column="project_name" property="projectName" jdbcType="VARCHAR" />
+    <result column="project_id" property="projectId" jdbcType="BIGINT" />
+    <result column="profile" property="profile" jdbcType="CHAR" />
+  </resultMap>
+  <select id="findTerminalByParams" resultMap="BaseResultMap" parameterType="java.lang.String" >
+	select t.terminal_id,t.terminal_name,t.mac_address,p.project_id,p.project_code,p.project_name,tp.profile from terminal t 
+	left join terminal_profile tp on t.terminal_id = tp.terminal_id and tp.type = 80301
+	left join project p on t.project_id = p.project_id
+	<where>
+		<if test="terminalId != null and terminalId != '' " >
+		 t.terminal_id = #{terminalId}
+		</if>
+		<if test="mac != null and mac != '' " >
+		 t.mac_address = #{mac}
+		</if>
+	</where>
+  </select>
+</mapper>

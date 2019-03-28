@@ -1,0 +1,35 @@
+# database properties
+jdbc_driver=com.mysql.jdbc_Driver
+#jdbc_url=jdbc:mysql://127.0.0.1:3306/platformdb?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull
+#jdbc_url=jdbc:mysql://116.62.6.183:13306/platformdb?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull
+jdbc_url=jdbc:mysql://116.62.101.227:3306/platformdb?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull
+
+
+jdbc_username=bossbutler
+jdbc_password=YdzyD1R2FnTvsjTgG8fXhAobkWjx/V+qFAG5EpdQh9A0VsVSFsYEzVw8QCAJjx1d1SzoHaO5CVC4PJ+dO0KMLA==
+#jdbc_username=root
+#jdbc_password=DQW7AMsyhvoOS6R6lwtoQaaGOgEDrK2XQoBkGBklYw7UhDG7FJ06k0wpIGAWiCxY0kjD3IZgBTj70wwmvToqZw==
+
+
+# 配置初始化大小、最小、最大
+jdbc_initialSize=1
+jdbc_minIdle=1
+jdbc_maxActive=20
+# 配置获取连接等待超时的时间
+jdbc_maxWait=60000
+# 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+jdbc_timeBetweenEvictionRunsMillis=60000
+# 配置一个连接在池中最小生存的时间，单位是毫秒
+jdbc_minEvictableIdleTimeMillis=300000
+jdbc_validationQuery=SELECT 1;
+jdbc_testWhileIdle=true
+jdbc_testOnBorrow=false
+jdbc_testOnReturn=false
+# 打开removeAbandoned功能
+jdbc_removeAbandoned=true
+# 1800秒，也就是30分钟
+jdbc_removeAbandonedTimeout=1800
+# 关闭abanded连接时输出错误日志
+jdbc_logAbandoned=true
+# 配置监控统计拦截的filters
+jdbc_filters=config

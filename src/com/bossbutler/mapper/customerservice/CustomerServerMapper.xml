@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.customerservice.CustomerServerMapper">
+	<insert id="insertsermidia">
+		insert into service_media
+		(
+		media_id,
+		bill_id,
+		ordinal,
+		main_classify,
+		media_type,
+		file_type,
+		create_time
+		)values(
+		#{mediaId},
+		#{billId},
+		#{ordinal},
+		#{main_classify},
+		#{mediaType},
+		#{fileType},
+		sysdate()
+		)
+	</insert>
+	<select id="queryordinal" resultType="imagepojo">
+		select ifnull(max(ordinal),0)+1
+		as ordinal from service_media where
+		main_classify=#{main_classify} and
+		media_type=#{mediaType} and bill_id = #{billId}
+	</select>
+</mapper>

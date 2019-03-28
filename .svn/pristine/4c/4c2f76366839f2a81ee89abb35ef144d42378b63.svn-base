@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.customerservice.MyBillProMapper">
+	<select id="myproserver" resultType="proterty">
+		SELECT
+		a.bill_id AS serverId,
+		a.bill_title AS tittle,
+		a.create_time AS
+		monadtime,
+		<if test="type==1">
+		a.bill_address AS
+		address,
+			CASE
+			WHEN
+			FIND_IN_SET(a.bill_id,c.bill_id)
+			then '已指派'
+			WHEN
+			a.status_code = '04'
+			THEN
+			'被指派'
+		</if>
+		<if test="type!=1">
+			max(e.emp_name) as name,
+			CASE
+			WHEN a.status_code = '06' and
+			FIND_IN_SET(a.bill_id,c.bill_id)
+			then '被指派'
+			WHEN a.status_code = '06'
+			THEN
+			'进行中'
+		</if>
+		END AS type,
+		<![CDATA[ 
+		CASE
+		WHEN find_in_set('1024', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS ck,
+		CASE
+		WHEN find_in_set('2048', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS pd,
+		CASE
+		WHEN find_in_set('4096', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS jd,
+		a.bill_code AS servercode
+		FROM
+		service_bill a
+		JOIN (
+		SELECT
+		a.bill_id,
+		GROUP_CONCAT(d.permission_code) AS per
+		FROM
+		service_bill a
+		JOIN emp e ON a.account_id = e.account_id
+		JOIN emp_project_relation ep ON a.project_id = ep.project_id
+		AND ep.emp_id = e.emp_id
+		JOIN role c ON ep.roles & c.role_code
+		JOIN permission d ON c.permissions & d.permission_code
+		 ]]>
+		WHERE
+		a.account_id = #{accountId}
+		AND d.app_id = '002'
+		GROUP BY
+		a.bill_title
+		) b ON a.bill_id = b.bill_id
+		<if test="type==1">
+			join (
+			select a.bill_id from service_bill a
+			join
+			service_progress b on a.bill_id=b.bill_id
+			where
+			b.operator_id=#{accountId}
+			and b.status_code='03'
+			and
+			a.status_code='04'
+			) c on a.bill_id=c.bill_id
+		</if>
+		<if test="type!=1">
+			join (
+			select a.bill_id from service_bill a
+			join
+			service_progress b on a.bill_id=b.bill_id
+			where
+			b.operator_id=#{accountId}
+			and b.status_code='04'
+			and
+			a.status_code='06'
+			) c on a.bill_id=c.bill_id
+			join emp e on a.operator_id=e.account_id
+		</if>
+		WHERE
+		a.operator_id =
+		#{accountId}
+		<if test="type==1">
+			and
+			(a.status_code='02' or a.status_code='04')
+			UNION
+			SELECT
+		<![CDATA[  
+		a.bill_id AS serverId,
+		a.bill_title AS tittle,
+		a.create_time AS monadtime,
+		a.bill_address AS
+		address,
+		'已指派'
+		AS type,
+		CASE
+		WHEN find_in_set('1024', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS ck,
+		CASE
+		WHEN find_in_set('2048', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS pd,
+		CASE
+		WHEN find_in_set('4096', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS jd,
+		a.bill_code AS servercode
+		FROM
+		service_bill a
+		JOIN service_progress c ON a.bill_id = c.bill_id
+		JOIN (
+		SELECT
+		a.bill_id,
+		GROUP_CONCAT(d.permission_code) AS per
+		FROM
+		service_bill a
+		JOIN emp e ON a.account_id = e.account_id
+		JOIN emp_project_relation ep ON a.project_id = ep.project_id
+		AND ep.emp_id = e.emp_id
+		JOIN role c ON ep.roles & c.role_code
+		JOIN permission d ON c.permissions & d.permission_code
+		]]>
+			WHERE
+			a.account_id = #{accountId}
+			AND d.app_id = '002'
+			GROUP BY
+			a.bill_title
+			) b ON a.bill_id = b.bill_id
+			WHERE
+			c.operator_id =
+			#{accountId}
+			and a.status_code='06'
+			and c.status_code='03'
+		</if>
+		<if test="type==2">
+			and a.status_code='06'
+			UNION
+			SELECT
+		<![CDATA[  
+		a.bill_id AS serverId,
+		a.bill_title AS tittle,
+		a.bill_address AS
+		address,
+		a.create_time AS monadtime,
+		'进行中'
+		AS type,
+		CASE
+		WHEN find_in_set('1024', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS ck,
+		CASE
+		WHEN find_in_set('2048', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS pd,
+		CASE
+		WHEN find_in_set('4096', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS jd,
+		a.bill_code AS servercode
+		FROM
+		service_bill a
+		JOIN service_progress c ON a.bill_id = c.bill_id
+		JOIN (
+		SELECT
+		a.bill_id,
+		GROUP_CONCAT(d.permission_code) AS per
+		FROM
+		service_bill a
+		JOIN emp e ON a.account_id = e.account_id
+		JOIN emp_project_relation ep ON a.project_id = ep.project_id
+		AND ep.emp_id = e.emp_id
+		JOIN role c ON ep.roles & c.role_code
+		JOIN permission d ON c.permissions & d.permission_code
+		]]>
+			WHERE
+			a.account_id = #{accountId}
+			AND d.app_id = '002'
+			GROUP BY
+			a.bill_title
+			) b ON a.bill_id = b.bill_id
+			WHERE
+			c.operator_id =
+			#{accountId}
+			and a.status_code='06'
+			and c.status_code='03'
+		</if>
+		<if test="type==3">
+			and
+			(a.status_code='07' or a.status_code='08')
+			UNION
+			SELECT
+		<![CDATA[  
+		a.bill_id AS serverId,
+		a.bill_title AS tittle,
+		a.bill_address AS
+		address,
+		a.create_time AS monadtime,
+		'进行中'
+		AS type,
+		CASE
+		WHEN find_in_set('1024', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS ck,
+		CASE
+		WHEN find_in_set('2048', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS pd,
+		CASE
+		WHEN find_in_set('4096', b.per) THEN
+		'1'
+		ELSE
+		'0'
+		END AS jd,
+		a.bill_code AS servercode
+		FROM
+		service_bill a
+		JOIN service_progress c ON a.bill_id = c.bill_id
+		JOIN (
+		SELECT
+		a.bill_id,
+		GROUP_CONCAT(d.permission_code) AS per
+		FROM
+		service_bill a
+		JOIN emp e ON a.account_id = e.account_id
+		JOIN emp_project_relation ep ON a.project_id = ep.project_id
+		AND ep.emp_id = e.emp_id
+		JOIN role c ON ep.roles & c.role_code
+		JOIN permission d ON c.permissions & d.permission_code
+		]]>
+			WHERE
+			a.account_id = #{accountId}
+			AND d.app_id = '002'
+			GROUP BY
+			a.bill_title
+			) b ON a.bill_id = b.bill_id
+			WHERE
+			c.operator_id =
+			#{accountId}
+			and (a.status_code='07' or a.status_code='08')
+			and
+			c.status_code='03'
+		</if>
+	</select>
+	<select id="selectserviceprogressch" resultType="java.lang.Integer">
+		select count(*) from service_progress a where a.bill_id=#{serverId} and
+		a.operator_id=#{accountId} and a.status_code='05'
+	</select>
+	<update id="updateserviceprogressch">
+	update service_progress a set a.status_code=#{status}
+	 where a.bill_id=#{serverId} and
+		a.operator_id=#{accountId} 
+	</update>
+	<update id="updatereceiveserver">
+		update service_bill a set
+		a.status_code=#{status},
+		a.operator_id=#{accountId},
+		a.update_time=sysdate(),
+		a.status_time=sysdate()
+		where
+		bill_id=#{serverId}
+	</update>
+	<insert id="insertservprogress">
+		insert into service_progress
+		(progress_id,
+		bill_id,
+		status_code,
+		status_time,
+		create_time,
+		operator_id,
+		status_remark
+		)values(
+		#{progressId},
+		#{serverId},
+		'03',
+		sysdate(),
+		sysdate(),
+		#{accountId},
+		#{pretime}
+		)
+	</insert>
+	<select id="querymyemp" resultType="myemp">
+	<![CDATA[ 
+		select DISTINCT a.account_id as empId,a.emp_name as empName from emp a 
+		join emp_project_relation s on a.emp_id=s.emp_id 
+		join role e on s.roles&e.role_code and e.org_id = a.org_id
+		JOIN permission f on e.permissions&f.permission_code 
+		where s.project_id = (
+			select project_id from service_bill where bill_id =#{serverId}
+		) 
+		and f.permission_code='2048' 
+		and a.account_id !=#{accountId}
+		]]>
+	</select>
+	<insert id="insertbpservprogress">
+		insert into service_progress
+		(progress_id,
+		bill_id,
+		status_code,
+		status_time,
+		create_time,
+		operator_id
+		)values(
+		#{progressId},
+		#{serverId},
+		'04',
+		sysdate(),
+		sysdate(),
+		#{bpaccountId}
+		)
+	</insert>
+	<delete id="deleteService_progress">
+	delete from service_progress where bill_id=#{serverId} and  status_code=#{status}
+	</delete>
+</mapper>

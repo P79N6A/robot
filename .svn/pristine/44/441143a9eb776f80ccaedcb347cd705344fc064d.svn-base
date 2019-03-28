@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.bossbutler.mapper.RAppProjectMapper">
+	<select id="selectAppCodeNameByAccountId" resultType="string">
+	select rap.appCodeName
+	from emp
+	join emp_project_relation as epr on epr.emp_id = emp.emp_id
+	join r_app_project as rap on rap.project_id = epr.project_id
+	where emp.account_id = #{accountId}
+	</select>
+	<select id="selectAppCodeNameByProjectId" parameterType="long" resultType="string">
+	select appCodeName from r_app_project where project_id = #{projectId}
+	</select>
+</mapper>

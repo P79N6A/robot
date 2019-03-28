@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.visitor.InviteVisitorMapper">
+  <resultMap id="visitorApplyOut" type="com.bossbutler.pojo.visitor.VisitorApplyOut" >
+    <id column="visitor_id" property="visitorId" jdbcType="BIGINT" />
+    <result column="apply_id" property="applyId" jdbcType="VARCHAR" />
+    <result column="visitor_name" property="visitorName" jdbcType="VARCHAR" />
+    <result column="project_name" property="projectName" jdbcType="BIGINT" />
+    <result column="limit_count" property="limitCount" jdbcType="BIGINT" />
+    <result column="end_date" property="visitorDate" jdbcType="VARCHAR" />
+    <result column="create_time" property="invitationDate" jdbcType="VARCHAR" />
+    <result column="arrive_time" property="arriveTime" jdbcType="VARCHAR" />
+    <result column="pass_count" property="passCount" jdbcType="VARCHAR" />
+    <result column="pass_status" property="passStatus" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="visitorRecord" type="com.bossbutler.pojo.visitor.VisitorRecord" >
+    <id column="visitor_id" property="visitorId" jdbcType="BIGINT" />
+    <result column="visitor_name" property="visitorName" jdbcType="VARCHAR" />
+    <result column="project_name" property="projectName" jdbcType="BIGINT" />
+    <result column="org_name" property="orgName" jdbcType="VARCHAR" />
+    <result column="create_time" property="visitorDate" jdbcType="VARCHAR" />
+    <result column="remark" property="visitorReason" jdbcType="VARCHAR" />
+    <result column="visitored_name" property="visitoredName" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="VisitorApplyResult" type="com.bossbutler.pojo.visitor.VisitorApply" >
+    <id column="relation_id" property="relationId" jdbcType="BIGINT" />
+    <result column="source_type" property="sourceType" jdbcType="CHAR" />
+    <result column="visitor_id" property="visitorId" jdbcType="BIGINT" />
+    <result column="account_id" property="accountId" jdbcType="BIGINT" />
+    <result column="project_id" property="projectId" jdbcType="BIGINT" />
+    <result column="visitor_code" property="visitorCode" jdbcType="CHAR" />
+    <result column="contents" property="contents" jdbcType="VARCHAR" />
+    <result column="transit_devices" property="transitDevices" jdbcType="VARCHAR" />
+    <result column="begin_date" property="beginDate" jdbcType="TIMESTAMP" />
+    <result column="end_date" property="endDate" jdbcType="TIMESTAMP" />
+    <result column="begin_time" property="beginTime" jdbcType="TIMESTAMP" />
+    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+    <result column="limit_count" property="limitCount" jdbcType="INTEGER" />
+    <result column="status_code" property="statusCode" jdbcType="CHAR" />
+    <result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="item_num" property="itemNum" jdbcType="INTEGER" />
+    <result column="dateformat_type" property="dateformatType" jdbcType="CHAR" />
+    
+    
+  </resultMap>
+  	<select id="queryVaPageListByProjectId" parameterType="com.bossbutler.pojo.visitor.VisitorApplyIn" resultMap="visitorRecord">
+			select v.visitor_id,v.visitor_name,va.create_time ,
+			s.org_name,a.login_name visitored_name ,va.remark 
+			from visitor_apply va 
+			left join visitor v on va.visitor_id = v.visitor_id
+			left join org o on va.org_id = o.org_id
+			left join org s on o.supper_id = s.org_id
+			left join account a on va.account_id = a.account_id 
+		<where>
+			<if test="visitorId != null and visitorId != ''">
+				and va.visitor_id = #{visitorId}
+			</if>
+			<if test="projectId != null and projectId != ''">
+				and va.project_id = #{projectId}
+			</if>
+			<if test="accountId != null and accountId != ''">
+				and va.account_id = #{accountId}
+			</if>
+			<if test="operatorId != null and operatorId != ''">
+				and va.operator_id = #{operatorId}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				and va.org_id = #{orgId}
+			</if>
+		</where>
+			order by va.create_time desc
+	</select>
+	<select id="queryVistorApplyByParams" parameterType="com.bossbutler.pojo.visitor.VisitorApplyIn" resultMap="VisitorApplyResult">
+		select * from visitor_apply v
+		<where>
+			<if test="visitorId != null and visitorId != ''">
+				and v.visitor_id = #{visitorId}
+			</if>
+			
+			<if test="dateformatType !='02'">
+				<if test="visitorTime != null and visitorTime != ''">
+					and v.end_date >= #{visitorTime} and #{visitorTime} >= v.begin_date 
+				</if>
+				<if test="vTime != null and vTime != ''">
+					and v.end_time >= #{vTime} and #{vTime} >= v.begin_time 
+				</if>
+				
+			</if>
+			<if test="dateformatType=='02'">
+				<if test="visitorTime != null and visitorTime != ''">
+					and CONCAT(v.end_date,' ',v.end_time) >= #{visitorTime} and #{visitorTime} >=CONCAT(v.begin_date,' ',v.begin_time)
+				</if>
+				
+			</if>
+			<if test="beginDate !=null and beginDate !=''">
+				and end_date >= #{endDate} and #{beginDate}>= begin_date
+			</if>
+			<if test="endDate !=null and endDate !=''">
+				and end_date >= #{endDate} and #{beginDate}>= begin_date
+			</if>
+			<if test="beginTime !=null and beginTime !=''">
+				and begin_time=#{beginTime}
+			</if>
+			<if test="endTime !=null and endTime !=''">
+				and end_time=#{endTime}
+			</if>
+			<if test="projectId != null and projectId != ''">
+				and v.project_id = #{projectId}
+			</if>
+			<if test="accountId != null and accountId != '' ">
+				and v.account_id = #{accountId}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				and v.org_id = #{orgId}
+			</if>	
+			<if test="applyId != null and applyId != ''">
+				and v.relation_id = #{applyId}
+			</if>
+			<if test="sourceType !=null and sourceType !=''">
+				and v.source_type=#{sourceType}
+			</if>
+			<if test="arrangeId !=null and arrangeId !=''">
+				and v.arrange_id=#{arrangeId}
+			</if>
+			<if test="statusCode !=null and statusCode !=''">
+				and v.status_code=#{statusCode}
+			</if>
+		</where>
+		order by v.source_type asc, v.create_time DESC
+		LIMIT 1
+	</select>
+		<select id="queryVistorByParams" parameterType="com.bossbutler.pojo.visitor.VisitorIn"
+		 resultType="com.bossbutler.pojo.regional.VisitorModel">
+		select * from visitor v
+		<where>
+			<if test="visitorId != null and visitorId != ''">
+				and v.visitor_id = #{visitorId}
+			</if>
+			<if test="visitorType != null and visitorType != ''">
+				and v.visitor_type = #{visitorType}
+			</if>
+			<if test="projectCode != null and projectCode != ''">
+				and v.project_code= #{projectCode}
+			</if>
+			<if test="phone != null and phone != ''">
+				and v.mobilephone = #{phone}
+			</if>
+			<if test="idCardNo != null and idCardNo != ''">
+				and v.idcard = #{idCardNo}
+			</if>
+			<if test="accountId !=null and accountId !='' "> 
+				and v.account_id = #{accountId}
+			</if>
+			<if test="orgId !=null and orgId !=''">
+				<choose>
+					<when test="orgId =='-1'">
+						and (v.org_id is null or v.org_id=0)
+					</when>
+					<otherwise>
+						and v.org_id=#{orgId}
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+	</select>
+	<select id="queryApplyRecordPageList" parameterType="String" resultMap="visitorApplyOut">
+	<![CDATA[ 
+		select 
+			va.relation_id apply_id, 
+			v.visitor_id  ,
+			v.visitor_name ,
+			p.project_name,
+			date_format(va.create_time,'%Y-%m-%d %H:%i:%s') create_time,
+			case when va.status_code = '02' then date_format(va.status_time,'%Y-%m-%d %H:%i:%s')
+			else null	end arrive_time,
+			date_format(va.end_date,'%Y-%m-%d') as end_date, 
+			'' pass_count,
+			case when DATE_ADD(va.end_date ,INTERVAL 1 day) >= CURRENT_DATE() and va.status_code = '01' 
+			then '<font color="#FF9900">重发</font>'
+	    when va.status_code = '02' then '<font color="#33b2b0">已到达</font>'
+		else '已过期' end pass_status
+		from visitor_apply va
+		left join project p on va.project_id = p.project_id
+		left join visitor v on va.visitor_id = v.visitor_id
+		where v.status_code = '01'
+	]]>
+		<if test="visitorId != null and visitorId != ''">
+			and v.visitor_id = #{visitorId}
+		</if>
+		<if test="accountId != null and accountId != ''">
+			and v.account_id = #{accountId}
+		</if>
+		group by va.relation_id order by va.end_date desc,va.create_time desc
+	</select>
+	
+	<select id="queryvisitorlist" parameterType="String" resultType="visitor">
+		select
+		a.visitor_name as name,a.visitor_id as visitorId,a.mobilephone
+		as phone,a.company_name as company
+		from visitor a where a.status_code = '01' and 
+		a.account_id=#{accountId} and
+		a.visitor_type='02' 
+	</select>
+	<insert id="insertVisitorApply">
+		insert into visitor_apply(
+			relation_id,
+			visitor_id,
+			source_type,
+			account_id,
+			visitor_code,
+			<if test="projectId !=null and projectId !=''">
+				project_id,
+			</if>
+			transit_devices,
+			<if test="trafficStrategy !=null and trafficStrategy !=null ">
+				traffic_strategy,
+			</if>
+			
+			contents,
+			status_code,
+			status_time,
+			begin_date,
+			end_date,
+			begin_time,
+			end_time,
+			limit_count,
+			<if test="operatorId != null and operatorId != ''">
+				operator_id,
+			</if>
+			create_time
+		<if test="orgId != null and orgId != ''">
+			,org_id
+		</if>
+		<if test="arrangeId !=null and arrangeId !=''">
+			,arrange_id
+		</if>
+		<if test="remark != null and remark != ''">
+			,remark
+		</if>
+		<if test="applyType != null and applyType != ''">
+			,apply_type
+		</if>
+		) values (
+			#{relationid},
+			#{visitorid},
+			#{sourceType},
+			#{accountId},
+			#{visitorCode},
+			<if test="projectId !=null and projectId !=''">
+				#{projectId},
+			</if>
+			
+			#{transitDevices},
+			<if test="trafficStrategy !=null and trafficStrategy !=null ">
+				#{trafficStrategy},
+			</if>
+			#{contents},
+			'01',
+			sysdate(),
+			#{begindate},
+			#{enddate},
+			#{beginTime},
+			#{endTime},
+			#{follows}
+		<if test="operatorId != null and operatorId != ''">
+			,#{operatorId}
+		</if>
+			,sysdate()
+		<if test="orgId != null and orgId != ''">
+			,#{orgId}
+		</if>
+		<if test="arrangeId !=null and arrangeId !=''">
+			,#{arrangeId}
+		</if>
+		<if test="remark != null and remark != ''">
+			,#{remark}
+		</if>
+		<if test="applyType != null and applyType != ''">
+			,#{applyType}
+		</if>
+		)
+	</insert>
+	<insert id="insertvisitor">
+		insert into visitor(
+		visitor_id,
+		<if test="orgId!=null and orgId !='' ">
+			org_id,
+		</if>
+		account_id,
+		visitor_type,
+		transit_code,
+		project_code,
+		visitor_name,
+		mobilephone,
+		company_name,
+		status_code,
+		status_time,
+		operator_id,
+		create_time
+		)values(
+		#{visitorid},
+		<if test="orgId!=null and orgId !='' ">
+			#{orgId},
+		</if>
+		
+		#{accountId},
+		'02',
+		#{transitCode},
+		#{projectCode},
+		#{name},
+		#{phone},
+		#{company},
+		'01',
+		sysdate(),
+		#{accountId},
+		sysdate()
+		)
+	</insert>
+	<select id="queryMyVisitorPageList" parameterType="int" resultType="myvisitor">
+		select b.visitor_id as visitorId,b.visitor_name as name,b.mobilephone
+		as phone,company_name as company from
+		visitor b
+		where b.status_code = '01' and
+		b.account_id=#{accountId} ORDER BY b.create_time desc
+	</select>
+	
+	<select id="getProOrgByAccId" parameterType="String" resultType="regional">
+		select 
+			distinct 
+			e.project_id as regionalId,
+			e.project_name as regionalName,
+			c.emp_name as empName,
+			po.org_name orgName,
+			o.org_id as orgId
+		from
+			emp c 
+			join emp_project_relation d
+				on c.emp_id=d.emp_id 
+			join project e 
+				on d.project_id=e.project_id 
+			left join org o 
+				on o.org_id = c.org_id
+			left join org po 
+				on po.org_id = o.supper_id 
+		where 
+			c.account_id=#{accountId}
+			and c.status_code='01'
+	</select>
+	
+	
+	<select id="queryRegional" parameterType="String" resultType="regional">
+		select 
+			distinct 
+				e.project_id as regionalId,
+				e.project_name as regionalName
+<!-- 		, c.emp_name as empName,po.org_name companyName  -->
+		, c.emp_name as empName,e.project_name companyName 
+		from
+		emp c join emp_project_relation d
+		on c.emp_id=d.emp_id join project e on d.project_id=e.project_id 
+		left join org o on o.org_id = c.org_id
+		left join org po on po.org_id = o.supper_id 
+		where c.account_id=#{accountId}
+	</select>
+	<select id="querymyvisitorcount" resultType="String">
+		select count(*) from
+		visitor a where a.account_id=#{accountId} and a.status_code = '01'
+
+	</select>
+	<select id="myvisitor" resultType="myvisitor">
+		select
+			b.visitor_id as visitorId,
+			b.visitor_name as name,
+			b.mobilephone as phone,
+			company_name as company,
+			b.transit_code as transitCode
+		from visitor b
+		where b.status_code = '01' 
+		<if test="name !=null and name !=''">
+			and b.visitor_name=#{name} 
+		</if>
+		and b.mobilephone=#{phone} and b.account_id = #{accountId}
+	</select>
+	<select id="findById" resultType="myvisitor">
+		select 
+			b.visitor_id as visitorId,
+			b.visitor_name as name,
+			b.mobilephone as phone,
+			company_name as company,
+			b.transit_code as transitCode,
+			b.status_code as statusCode,
+			b.idcard,
+			b.check_cnt checkCnt,
+			b.visitor_type visitorType,
+			b.project_code projectCode
+		from visitor b where b.status_code = '01'
+		and b.visitor_id = #{visitorId}
+	</select>
+	<select id="findByPrimary" resultType="myvisitor">
+		select 
+			b.visitor_id as visitorId,
+			b.visitor_name as name,
+			b.mobilephone as phone,
+			company_name as company,
+			b.transit_code as transitCode,
+			b.status_code as statusCode,
+			b.idcard,
+			b.check_cnt checkCnt,
+			b.visitor_type visitorType,
+			b.project_code projectCode
+		from visitor b where b.visitor_id = #{visitorId}
+	</select>
+	<delete id="deleteApplyRecord" parameterType="java.lang.String">
+		delete from visitor_apply where relation_id = #{applyId}
+	</delete>
+	<update id="updateVisitorDelete" parameterType="java.lang.String">
+		update visitor v set v.status_code = '02',v.update_time = sysdate()
+		,v.operator_id = #{accountId}
+		 where visitor_id =#{visitorId}
+	</update>
+	<update id="updateMobilephone" parameterType="java.lang.String">
+		update visitor v set v.mobilephone = #{mobilePhone},v.update_time = sysdate()
+		 where visitor_id =#{visitorId}
+	</update>
+	
+	<update id="updateDynamic">
+		update visitor 
+		<set>
+			
+			<if test="model.name !=null and model.name !=''">
+				visitor_name=#{model.name},
+			</if>
+			<if test="model.phone !=null and model.phone !=''">
+				mobilephone=#{model.phone},
+			</if>
+			<if test="model.company !=null and model.company !=''">
+				company_name=#{model.company},
+			</if>
+			<if test="model.accountId !=null and model.accountId!=''">
+				operator_id=#{model.accountId},
+			</if>
+			<if test="model.statusCodes !=null and model.statusCodes !=''">
+				status_code=#{model.statusCodes},
+			</if>
+			<if test="model.visitorType !=null and model.visitorType !=''">
+				visitor_type=#{model.visitorType},
+			</if>
+			<if test="model.checkCnt !=null and model.checkCnt !=''">
+				check_cnt=#{model.checkCnt},
+			</if>
+			<if test="model.projectCode !=null and model.projectCode !=''">
+				project_code=#{model.projectCode},
+			</if>
+			update_time = sysdate(),
+			status_time=sysdate()
+		</set>
+		where visitor_id = #{model.visitorId}
+		
+	</update>
+	
+</mapper>

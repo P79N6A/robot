@@ -1,0 +1,133 @@
+.bill-div{
+	margin:10px 15px 10px 15px;
+}
+div,td{
+	box-sizing:border-box;
+	-moz-box-sizing:border-box; /* Firefox */
+	-webkit-box-sizing:border-box; /* Safari */
+}
+.span-sign{
+	color: red;
+	font-size: 14px;
+	position:relative;
+	left:-15px;
+}
+.bill-table{
+	width: 100%;
+}
+.bill-table th{
+	padding:5px;
+	text-align:center;
+	background-color: #cccccc;
+    border-top: solid 1px #797979;
+    border-bottom: solid 1px #797979;
+   
+}
+.bill-table td{
+	text-align:center;
+	padding:5px;
+    border-top: solid 1px #797979;
+    border-bottom: solid 1px #797979;
+}
+.bill-font{
+	font-size: 14px;
+	font-family: "microsoft yahei";
+	color: #333333;
+	font-weight: normal;
+}
+.bill-title-frist{
+	padding:14px 0px;
+	width: 100%;
+	background-color: #EFEFEF;
+}
+.bill-title-small{
+	height: 5px;
+	width: 100%;
+	background-color: #EFEFEF;
+}
+.span-title{
+	color:#000000;
+	font-weight:bold;
+	font-size: 14px;
+}
+.font-title{
+	font-weight: bold;
+}
+
+.bill-but-yellow{
+	box-shadow: 0px 2px 0px #888888;
+	background-color: #F5C53A;
+	height: 40px;
+	width: 47.5%;
+	color: #fff;
+	display: inline-block;
+}
+.bill-but-gray{
+	box-shadow: 0px 2px 0px #888888;
+	background-color: #848484;
+	height: 40px;
+	width: 47.5%;
+	color: #fff;
+	display: inline-block;
+}
+
+.div-label{
+	width: 30%;
+	display: inline-table;
+	
+}
+.div-label {
+	font-size: 14px;
+	color: #fff;
+	padding: 10px 0px;
+}
+
+.bac01{
+	background-color: #FF9900;
+}
+.bac02{
+	background-color: #008000;
+}
+.bac03{
+	background-color: #FF0000;
+}
+.ui-icon-circular{
+	font-size:14px;
+	text-align:center;
+	border-radius: 50%;
+	background-color:#dddddd;
+	width: 45px;
+	height: 45px;
+	display:table-cell;
+	vertical-align: middle;
+}
+.ui-icon-verticalline{
+	width: 1px;
+	height:47px; 
+	background: #27A9AF;
+}
+.div-bill-dynamic{
+	border: 1px solid #dddddd;
+	display:table;
+	width: 100%;
+	height:100%;
+	
+}
+
+.div-table{
+	display:table;
+}
+.div-row{
+	display: table-row;
+}
+.div-cell{
+	display: table-cell;
+	vertical-align: middle;
+	width: 100%;
+	height: 100%;
+}
+.vertical-center{
+	padding: 4px 22px;
+	height: 55px;
+}
+

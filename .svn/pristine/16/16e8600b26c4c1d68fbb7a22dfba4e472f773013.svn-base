@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.org.OrgMediaMapper">
+	  
+ 
+ 	<resultMap id="OrgMediaM" type="com.bossbutler.pojo.org.OrgMediaModel">
+        <result property="mediaId" column="media_id"/>
+        <result property="orgId" column="org_id"/>
+        <result property="ordinal" column="ordinal"/>
+        <result property="mainClassify" column="main_classify"/>
+        <result property="mediaType" column="media_type"/>
+        <result property="fileType" column="file_type"/>
+        <result property="mediaNo" column="media_no"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="operatorId" column="operator_id"/>
+	</resultMap>
+	
+	
+		<!-- 用于select查询公用抽取的列 -->
+	<sql id="OrgMediaColumns">
+	    <![CDATA[
+        	media_id,
+        	org_id,
+        	ordinal,
+        	main_classify,
+        	media_type,
+        	file_type,
+        	media_no,
+        	create_time,
+        	update_time,
+        	operator_id
+	    ]]>
+	</sql>
+	
+	
+	
+	
+	 <insert id="addOrgMedia" parameterType="hashmap">
+	 	insert into org_media(media_id,org_id,ordinal,main_classify,media_type,file_type,media_no,create_time,update_time,operator_id)
+	 	values(#{media_id},#{org_id},#{ordinal},#{main_classify},#{media_type},#{file_type},#{media_no},#{create_time},#{update_time},#{operator_id})
+	 </insert>
+  	 <delete id="deleteOrgMediaById" parameterType="String">
+  	 	delete from org_media where media_id=#{media_id}
+  	 </delete>
+	 <select id="getDistinctMedia" parameterType="hashmap" resultType="hashmap">
+	 	select om.media_id,om.org_id,ordinal,om.main_classify,om.media_type,om.file_type,om.media_no,om.create_time,org.status_code,org.status_remark
+	 	from org_media om left join org on om.org_id=org.org_id where om.org_id=#{org_id} and om.media_type=#{media_type} and om.main_classify=#{main_classify}
+	 </select>
+	 <select id="getOrgMediaById" parameterType="String" resultType="hashmap">
+	 	select media_id,org_id,ordinal,main_classify,media_type,file_type,media_no,create_time,update_time,operator_id,data_version
+	 	from org_media where media_id=#{media_id}
+	 </select>
+	 <update id="updateMediaNoById" parameterType="hashmap">
+	 	update org_media set media_no=#{media_no}  where  media_id=#{media_id}
+	 </update>
+	 
+	 
+	 
+	 
+	 	<insert id="insertDynamic" useGeneratedKeys="true" keyProperty="mediaId">
+        INSERT INTO org_media 
+        	<trim prefix="(" suffix=")" suffixOverrides=",">
+		  <if test="mediaId!=null">
+        	  media_id ,
+			</if>
+		  <if test="orgId!=null">
+        	  org_id ,
+			</if>
+		  <if test="ordinal!=null">
+        	  ordinal ,
+			</if>
+		  <if test="mainClassify!=null">
+        	  main_classify ,
+			</if>
+		  <if test="mediaType!=null">
+        	  media_type ,
+			</if>
+		  <if test="fileType!=null">
+        	  file_type ,
+			</if>
+		  <if test="mediaNo!=null">
+        	  media_no ,
+			</if>
+		  <if test="createTime!=null">
+        	  create_time ,
+			</if>
+		  <if test="updateTime!=null">
+        	  update_time ,
+			</if>
+		  <if test="operatorId!=null">
+        	  operator_id ,
+			</if>
+		</trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+		 <if test="mediaId!=null">
+        	#{mediaId} ,
+	      </if>
+		 <if test="orgId!=null">
+        	#{orgId} ,
+	      </if>
+		 <if test="ordinal!=null">
+        	#{ordinal} ,
+	      </if>
+		 <if test="mainClassify!=null">
+        	#{mainClassify} ,
+	      </if>
+		 <if test="mediaType!=null">
+        	#{mediaType} ,
+	      </if>
+		 <if test="fileType!=null">
+        	#{fileType} ,
+	      </if>
+		 <if test="mediaNo!=null">
+        	#{mediaNo} ,
+	      </if>
+		 <if test="createTime!=null">
+        	#{createTime} ,
+	      </if>
+		 <if test="updateTime!=null">
+        	#{updateTime} ,
+	      </if>
+		 <if test="operatorId!=null">
+        	#{operatorId} ,
+	      </if>
+        </trim>
+	</insert>
+	
+	
+		<update id="updateDynamic" >
+        UPDATE org_media 
+        <set>
+			 <if test="orgId!=null">
+	          org_id = #{orgId} ,
+			 </if>
+			 <if test="ordinal!=null">
+	          ordinal = #{ordinal} ,
+			 </if>
+			 <if test="mainClassify!=null">
+	          main_classify = #{mainClassify} ,
+			 </if>
+			 <if test="mediaType!=null">
+	          media_type = #{mediaType} ,
+			 </if>
+			 <if test="fileType!=null">
+	          file_type = #{fileType} ,
+			 </if>
+			 <if test="mediaNo!=null">
+	          media_no = #{mediaNo} ,
+			 </if>
+			 <if test="createTime!=null">
+	          create_time = #{createTime} ,
+			 </if>
+			 <if test="updateTime!=null">
+	          update_time = #{updateTime} ,
+			 </if>
+			 <if test="operatorId!=null">
+	          operator_id = #{operatorId} ,
+			 </if>
+			 </set>
+			 <where> 
+			 <choose>
+			    <when test="orgId!=null and  orgId>0">
+			        org_id = #{orgId}
+			    </when>
+			    <otherwise>
+			       media_Id=#{mediaId}
+			    </otherwise>
+			 </choose>
+			 </where>    
+	</update>
+	
+	
+	<delete id="deleteBatch">
+    <![CDATA[
+        DELETE FROM org_media WHERE
+        media_id in  (
+       <foreach collection="list" item="item" separator=",">
+			#{item}
+		</foreach>)
+    ]]>
+    </delete>
+    
+    
+    <select id="getEntityById" resultMap="OrgMediaM">
+		SELECT <include refid="OrgMediaColumns" />
+		    FROM org_media 
+	        WHERE 
+		        media_id = #{id} 
+	</select>
+	
+	 <select id="getEntityDynamic" resultMap="OrgMediaM"  parameterType="com.bossbutler.pojo.org.OrgMediaModel">
+		SELECT <include refid="OrgMediaColumns" />
+		    FROM org_media 
+		    
+		    <where>
+		       <if test="orgId!=null">
+	             and  org_id = #{orgId} 
+			 </if>
+			 <if test="ordinal!=null">
+	         and  ordinal = #{ordinal} 
+			 </if>
+			 <if test="mainClassify!=null">
+	          and main_classify = #{mainClassify} 
+			 </if>
+			 <if test="mediaType!=null">
+	         and  media_type = #{mediaType} 
+			 </if>
+			 <if test="fileType!=null">
+	          and file_type = #{fileType} 
+			 </if>
+			 <if test="mediaNo!=null">
+	          and media_no = #{mediaNo} 
+			 </if>
+			 <if test="createTime!=null">
+	          and create_time = #{createTime} 
+			 </if>
+			 <if test="updateTime!=null">
+	         and update_time = #{updateTime} 
+			 </if>
+			 <if test="operatorId!=null">
+	         and  operator_id = #{operatorId} 
+			 </if>
+		    </where>
+	</select>
+	 <select id="getOrgById" resultType="com.bossbutler.pojo.OrgModel">
+		SELECT org_id orgId,org_code orgCode, duty_type dutyType from org where org_id =1
+	</select>
+	 
+	 
+</mapper>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.customerservice.CustomerBillMapper">
+	<select id="queryserverlistcuss" resultType="customer"
+		parameterType="String">
+		select a.bill_id as serverId,a.bill_code as servercode,a.bill_title as tittle,a.bill_desc as content
+		,a.link_man as name,a.create_time as monadtime,a.bill_address as address, a.status_code as statusCode,
+		case when a.bill_type='01' then '工程类'
+		when a.bill_type='02' then '保安类'
+		when a.bill_type='03' then '保洁类'
+		when a.bill_type='04' then '客服类'
+		when a.bill_type='05' then '其他'
+		end as monadrype,
+		case when a.status_code='02' then '待接单'
+		when a.status_code='04' then '待接单'
+		when a.status_code='06' then '已接单'
+		when a.status_code='07' then '已完成'
+		when a.status_code='08' then '已评价'
+		when a.status_code='09' then '已取消'
+		end as type,		
+		case when a.status_code='08' then '已评价' end as comments
+		from service_bill a 
+		where  a.account_id=#{accountId}
+		<if test="type==1">
+			and (a.status_code='02' or a.status_code='03' or a.status_code='04')
+		</if>
+		<if test="type==2">
+			and a.status_code='06'
+		</if>
+		<if test="type==3">
+			and (a.status_code='07' or a.status_code='08' or a.status_code='09')
+		</if>
+		<if test="type==4">
+			and a.status_code='09'
+		</if>
+	</select>
+	<select id="querydetail" resultType="serverdetail" parameterType="String">
+		select a.bill_id serverId,a.bill_title as title, a.bill_desc as billdesc, a.bill_code as billcode, 
+		case when a.bill_type='01' then '工程类' 
+		when a.bill_type='02' then '保安类' 
+		when a.bill_type='03' then '保洁类' 
+		when a.bill_type='04' then '客服类' 
+		when a.bill_type='05' then '其他' end as billtype, 
+		case when a.status_code='02' then '待接单'
+		when a.status_code='04' then '待接单'
+		when a.status_code='06' then '已接单'
+		when a.status_code='07' then '已完成'
+		when a.status_code='08' then '已评价'
+		when a.status_code='09' then '已取消'
+		when a.status_code='10' then '已退回'
+		end as type,	
+		b.project_name as project, a.bill_address as address,a.link_man as customername, 
+		a.link_phone as phone, a.status_code statusCode,
+		(select max(t.operator_id) from service_progress t where t.bill_id = a.bill_id and t.status_code = '03' order by create_time desc) as pdAccountId , 
+		<if test="accountId != '' and accountId != null">
+			case when 
+			(select count(1) from service_progress sp where sp.bill_id = #{serverId} 
+				and sp.status_code = '03' and sp.operator_id = #{accountId}  )
+			then 1 else 0  end as isSend,
+		</if>
+		case when a.status_code = '07' or a.status_code = '08' then
+		(select date_format(r.create_time,'%Y-%m-%d %H:%i') from service_progress r 
+				where r.status_code = '07' and r.bill_id = a.bill_id) end as realservertime, 
+		case when a.status_code = '09' then
+		(select date_format(cancel.create_time,'%Y-%m-%d %H:%i') from service_progress cancel 
+				where cancel.status_code = '09' and cancel.bill_id = a.bill_id) end as noservertime, 
+		(select date_format(pre.update_time,'%Y-%m-%d %H:%i') from service_progress pre 
+				where pre.status_code = '06' and pre.bill_id = a.bill_id)  as preservertime, 
+		concat( a.expect_begin, "-", substring(a.expect_end, 12, 19) ) as servertime, 
+		case when a.status_code = '07' then 
+		(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id where t.bill_id=a.bill_id and t.status_code='07') 
+		when (a.status_code='03') then
+		(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+			where(t.status_code='03') and a.bill_id= a.bill_id) 
+		when (a.status_code='04') then
+		(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+			where(t.status_code='04') and a.bill_id= a.bill_id) 
+		when (a.status_code='10') then
+		(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+			where(t.status_code='10') and a.bill_id= a.bill_id) 
+		else(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+			where (t.status_code='06') and t.bill_id= a.bill_id) end as parameter 
+		from service_bill a join project b on a.project_id = b.project_id 
+		where a.bill_id =#{serverId} 
+	</select>
+	<select id="queryserverprogress" resultType="severprogress">
+		<if test="statusCode == '02' or statusCode=='04' or statusCode =='06' or statusCode=='07' ">
+		select 
+		case when status_code = '02' || status_code = '04' then '待接单'
+			   when status_code = '06' then '待完成'
+				 when status_code = '07' then '待评价' end  as content, '' as time , 0 as ordera
+		from service_bill where bill_id = #{serverId}
+		union 
+		</if>
+		<![CDATA[
+		select t.content,time,ordera from (
+		SELECT a.status_remark AS content, 
+		a.status_time AS time, (@rowNum:=@rowNum+1) as ordera 
+		FROM service_progress a JOIN service_bill b ON a.bill_id = b.bill_id 
+		join (Select (@rowNum :=0) ) c on 1=1 WHERE a.status_code <> '03' and
+		a.bill_id = #{serverId} ORDER BY a.create_time desc) t
+		]]>
+	</select>
+	<select id="selectstatus" resultType="String">
+		select a.status_code from
+		service_bill a where a.bill_id=#{serverId}
+	</select>
+</mapper>

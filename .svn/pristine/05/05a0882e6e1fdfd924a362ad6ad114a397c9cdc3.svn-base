@@ -1,0 +1,2 @@
+#zookeeper.address.array=127.0.0.1:3181,127.0.0.1:3182,127.0.0.1:3183
+#host.port=appserver01:8082

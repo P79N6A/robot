@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.ConfigureDbMapper">
+
+	<select id="selectCenterIdWorkId" resultType="hashmap"
+		parameterType="string">
+		select
+		datacenterId, workerId from configure_db
+		where
+		district = #{district} and station = #{station}
+	</select>
+
+</mapper>

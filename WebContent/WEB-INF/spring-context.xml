@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<!-- 扫描注解controller组件并且自动的注入spring beans中. -->
+	<context:component-scan base-package="com.bossbutler.controller" />
+	
+	<!-- 拦截器 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<mvc:exclude-mapping path="/login" />
+			<mvc:exclude-mapping path="/login02" />
+			<mvc:exclude-mapping path="/machinelogin" />
+			<mvc:exclude-mapping path="/register" />
+			<mvc:exclude-mapping path="/inviLogin" />
+			<mvc:exclude-mapping path="/inviLoginNext" />
+			<mvc:exclude-mapping path="/qrcode/qr" />
+			<mvc:exclude-mapping path="/check/account/exist" />
+			<mvc:exclude-mapping path="/mobilevf/**" />
+			<mvc:exclude-mapping path="/mobile/**" />
+			<mvc:exclude-mapping path="/pushMessage/**" />
+			<mvc:exclude-mapping path="/visitor/**" />
+			<mvc:exclude-mapping path="/myself/**" />
+			<mvc:exclude-mapping path="/myregional/**" />
+			<mvc:exclude-mapping path="/image/**" />
+			<mvc:exclude-mapping path="/invitation/**" />
+			<mvc:exclude-mapping path="/customer/**" />
+			<mvc:exclude-mapping path="/qrcode/**" />
+			<mvc:exclude-mapping path="/upload/**" />
+			<mvc:exclude-mapping path="/hm/**" />
+			<mvc:exclude-mapping path="/ib/**" />
+			<mvc:exclude-mapping path="/visitormachine/**" />
+			<mvc:exclude-mapping path="/info/**" />
+			<mvc:exclude-mapping path="/complaint/**" />
+			<mvc:exclude-mapping path="/version/**" />
+			<mvc:exclude-mapping path="/refresh/**" />
+			<mvc:exclude-mapping path="/passage/**" />
+			<mvc:exclude-mapping path="/visitorM/**" />
+			<mvc:exclude-mapping path="/handset/**" />
+			<mvc:exclude-mapping path="/remote/robot/**" />
+			<!-- 微信小程序不拦截 -->
+			<mvc:exclude-mapping path="/mp/**" />
+			<!-- 不拦截h5交互接口 by horizon -->
+			<mvc:exclude-mapping path="/app/hpage/redit/**" />
+			<mvc:exclude-mapping path="/app/transitcode/manager/**" />
+			<mvc:exclude-mapping path="/myBill/appH5/*" />
+			<mvc:exclude-mapping path="/third/dr/**" />
+			<mvc:exclude-mapping path="/third/serve/auth/**" />
+			<mvc:exclude-mapping path="/appClient/apk/notice/check" />
+			<mvc:exclude-mapping path="/appClient/apk/checkApkVer" />
+			<mvc:exclude-mapping path="/appClient/apk/hotUpdate" />
+			<mvc:exclude-mapping path="/mingdan/**" />
+			<bean class="com.bossbutler.common.Interceptor"></bean>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<!-- 拦截h5交互接口 by horizon  -->
+		    <mvc:mapping path="/app/transitcode/manager/**" />
+		    <mvc:mapping path="/myBill/appH5/*" />
+			<bean class="com.bossbutler.common.AppHFiveManagerInterceptor"></bean>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<mvc:exclude-mapping path="/pushMessage/**" />
+			<mvc:exclude-mapping path="/myBill/appH5/*" />
+			<mvc:exclude-mapping path="/app/transitcode/manager/**" />
+			<mvc:exclude-mapping path="/app/hpage/redit/**" />
+			<mvc:exclude-mapping path="/third/serve/auth/**" />
+			<mvc:exclude-mapping path="/third/dr/**" />
+			<mvc:exclude-mapping path="/appClient/apk/notice/check" />
+			<mvc:exclude-mapping path="/appClient/apk/checkApkVer" />
+			<mvc:exclude-mapping path="/appClient/apk/hotUpdate" />
+			<mvc:exclude-mapping path="/mingdan/**" />
+			<mvc:exclude-mapping path="/remote/robot/**" />
+			<bean class="com.bossbutler.common.FormValidInterceptor"></bean>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<mvc:exclude-mapping path="/remote/robot/**" />
+			<bean class="com.bossbutler.common.AppElementManagerInterceptor"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	<!-- 处理请求时返回json字符串的中文乱码问题. -->
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>text/html;charset=UTF-8</value>
+						<value>application/json;charset=UTF-8</value>
+					</list>
+				</property>
+				<property name="writeAcceptCharset" value="false" />
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
+	<!-- <aop:config>
+            <aop:aspect id="aopact" ref="aopact">
+                <aop:pointcut id="addAllMethod" expression="execution(* com.xrq.aop.HelloWorld.*(..))" />
+                <aop:before method="printTime" pointcut-ref="addAllMethod" />
+                <aop:after method="printTime" pointcut-ref="addAllMethod" />
+            </aop:aspect>
+    </aop:config> -->
+	
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving 
+		up static resources in the ${webappRoot}/resources dir. -->
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+
+	<!-- 定义一个视图解析器(用于支持Servlet、JSP视图解析) -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+	<!-- 处理文件上传（上传拦截）如最大上传值及最小上传值 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="104857600" />
+		<property name="maxInMemorySize" value="4096" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+	<!-- 验证码 -->
+	<bean id="captchaProducer" class="com.google.code.kaptcha.impl.DefaultKaptcha">
+		<property name="config">
+			<bean class="com.google.code.kaptcha.util.Config">
+				<constructor-arg>
+					<props>
+						<prop key="kaptcha.noise.impl">com.google.code.kaptcha.impl.NoNoise</prop>
+						<prop key="kaptcha.border">no</prop>
+						<prop key="kaptcha.border.color">105,179,90</prop>
+						<prop key="kaptcha.image.width">125</prop>
+						<prop key="kaptcha.image.height">45</prop>
+						<prop key="kaptcha.textproducer.font.size">35</prop>
+						<prop key="kaptcha.textproducer.char.space">6</prop>
+						<!-- <prop key="kaptcha.session.key">code</prop> -->
+						<prop key="kaptcha.textproducer.char.length">4</prop>
+						<prop key="kaptcha.textproducer.font.names">宋体,楷体,微软雅黑</prop>
+					</props>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>
+</beans>

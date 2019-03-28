@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.visitor.VisitorApplyMapper">
+	 <resultMap id="BaseResultMap" type="com.bossbutler.pojo.visitor.VisitorApply" >
+    <id column="relation_id" property="relationId" jdbcType="BIGINT" />
+    <result column="visitor_id" property="visitorId" jdbcType="BIGINT" />
+    <result column="account_id" property="accountId" jdbcType="BIGINT" />
+    <result column="project_id" property="projectId" jdbcType="BIGINT" />
+    <result column="org_id" property="orgId" jdbcType="BIGINT" />
+    <result column="source_type" property="sourceType" jdbcType="CHAR" />
+    <result column="visitor_code" property="visitorCode" jdbcType="CHAR" />
+    <result column="contents" property="contents" jdbcType="VARCHAR" />
+    <result column="begin_date" property="beginDate" jdbcType="TIMESTAMP" />
+    <result column="end_date" property="endDate" jdbcType="TIMESTAMP" />
+    <result column="begin_time" property="beginTime" jdbcType="TIMESTAMP" />
+    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+    <result column="limit_count" property="limitCount" jdbcType="INTEGER" />
+    <result column="status_code" property="statusCode" jdbcType="CHAR" />
+    <result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+    <result column="item_num" property="itemNum" jdbcType="INTEGER" />
+    <result column="iccard_code" property="iccardCode" jdbcType="VARCHAR" />
+    <result column="visitor_name" property="visitorName" jdbcType="VARCHAR"/>
+  </resultMap>
+	<select id="findVisitorByIdCard" resultType="com.bossbutler.pojo.regional.VisitorModel">
+		select * from
+		visitor where project_code=#{project_code} and idcard=#{idNo} and
+		visitor_type='03'
+	</select>
+	<insert id="createVisitor" useGeneratedKeys="false" keyProperty="visitor_id">
+		
+        INSERT INTO visitor (
+				visitor_id,
+				<if test="account_id !=null and account_id !=''">
+					account_id,
+				</if>
+				<if test="org_id !=null and org_id !=''">
+					org_id,
+				</if>
+				visitor_type,
+				visitor_name,
+				<if test="company_name !=null and company_name !=''">
+					company_name,
+				</if>
+				mobilephone,
+				idcard,
+				<if test="remark !=null and remark !=''">
+					remark,
+				</if>
+				status_code,
+				status_time,
+				create_time,
+				update_time,
+				<if test="checkCnt !=null and checkCnt !=''">
+					check_cnt,
+				</if>
+				<if test="operator_id !=null and operator_id !=''">
+					operator_id,
+				</if>
+				transit_code,
+				project_code
+			)
+		VALUES
+			(
+				#{visitor_id} ,
+				<if test="account_id !=null and account_id !=''">
+					#{account_id} ,
+				</if>
+				<if test="org_id !=null and org_id !=''">
+					#{org_id} ,
+				</if>
+				#{visitor_type} ,
+				#{visitor_name} ,
+				<if test="company_name !=null and company_name !=''">
+					#{company_name} ,
+				</if>
+				
+				#{mobilephone} ,
+				#{idcard} ,
+				<if test="remark !=null and remark !=''">
+					#{remark} ,
+				</if>
+				#{status_code} ,
+				now(),
+				now(),
+				now(),
+				<if test="checkCnt !=null and checkCnt !=''">
+					#{checkCnt},
+				</if>
+				<if test="operator_id !=null and operator_id !=''">
+					#{operator_id} ,
+				</if>
+				#{transit_code},
+				#{project_code}
+				
+			)
+    	
+	</insert>
+	
+	 <update id="updateDynamic">
+  		update visitor_apply 
+  		<set>
+  		<if test="model.trafficStrategy !=null and model.trafficStrategy !=''">
+  			traffic_strategy=#{model.trafficStrategy},
+  		</if>
+  		<if test="model.transitDevices !=null and model.transitDevices !=''">
+  			transit_devices=#{model.transitDevices},
+  		</if>
+  		<if test="model.contents !=null and model.contents !=''">
+  			contents=#{model.contents},  		
+  		</if>
+  		<if test="model.createTime !=null ">
+  			create_time=#{model.createTime},
+  		</if>
+  		<if test="model.sourceType !=null ">
+  			source_type=#{model.sourceType},
+  		</if>
+  		<if test="model.applyType !=null ">
+  			apply_type=#{model.applyType}
+  		</if>
+  		
+  	</set>
+  	<where>
+  		relation_id=#{model.relationId}
+  	</where>
+  
+  </update>
+  
+  <update id="updateDynamicQuery">
+  		update visitor_apply 
+  		<set>
+  		<if test="model.trafficStrategy !=null and model.trafficStrategy !=''">
+  			traffic_strategy=#{model.trafficStrategy},
+  		</if>
+  		<if test="model.transitDevices !=null and model.transitDevices !=''">
+  			transit_devices=#{model.transitDevices},
+  		</if>
+  		<if test="model.contents !=null and model.contents !=''">
+  			contents=#{model.contents},  		
+  		</if>
+  		<if test="model.createTime !=null ">
+  			create_time=#{model.createTime},
+  		</if>
+  		<if test="model.sourceType !=null ">
+  			source_type=#{model.sourceType},
+  		</if>
+  		<if test="model.applyType !=null ">
+  			apply_type=#{model.applyType}
+  		</if>
+  		<if test="model.statusCode !=null and  model.statusCode !=''">
+  			status_code=#{model.statusCode}
+  		</if>
+  		
+  		
+  	</set>
+  	<where>
+  		<if test="queryModel.visitorId !=null and queryModel.visitorId !=''">
+  			visitor_id=#{queryModel.visitorId} 		
+  		</if>
+  		<if test="queryModel.statusCode !=null and queryModel.statusCode !=''">
+  			and status_code=#{queryModel.statusCode}
+  		</if>
+  		<if test="queryModel.relationIds !=null and queryModel.relationIds !=''">
+  			and relation_id in (${queryModel.relationIds})
+  		</if>
+  		or 1!=1
+  	</where>
+  
+  </update>
+	<select id="getPublicRegionalByMachId" resultType="com.bossbutler.pojo.regional.RegionalModel">
+		SELECT * from regional where terminal_id=#{machindeId}
+	</select>
+	<select id="getPublicRegionalEnableByMachId" resultType="com.bossbutler.pojo.regional.RegionalModel">
+		SELECT * from regional where status_code = '01' and terminal_id=#{machindeId}
+	</select>
+	<select id="findVisitorById" resultType="com.bossbutler.pojo.regional.VisitorModel">
+		SELECT
+		v.visitor_id,v.company_name,v.visitor_name,v.mobilephone,v.idcard,v.idcard,v.remark,v.transit_code
+		from visitor v
+		where v.visitor_id=#{id}
+	</select>
+	<select id="getRegionalListByEmpId" resultType="com.bossbutler.pojo.regional.RegionalModel">
+		select re.*,r.org_id from regional_emp_relation re  
+		LEFT JOIN regional r on r.regional_id=re.regional_id
+		where re.emp_id in
+		<foreach collection="list" item="item" open="(" separator=","
+			close=")">
+			#{item.emp_id}
+		</foreach>
+	</select>
+	<select id="getDeviceByRegionalId" resultType="com.bossbutler.pojo.regional.Device">
+		select DISTINCT 
+			d.device_id deviceId,
+			d.serial_number
+			serialNumber,
+			d.controller_id controllerId,
+			d.device_code
+			deviceCode,
+			d.device_name deviceName,
+			d.device_type deviceType,
+			d.device_remark deviceRemark,
+			rar.regional_id
+		from
+			regional_arrange_relation rar
+		inner join arrange a 
+			on a.arrange_id=rar.arrange_id
+		inner JOIN arrange_device ad 
+			on a.arrange_id=ad.arrange_id
+		INNER JOIN device d 
+			on ad.device_id=d.device_id
+		INNER JOIN controller c 
+			on d.controller_id=c.controller_id	
+		where regional_id in
+		<foreach collection="list" item="model" open="(" separator=","
+			close=")">
+			#{model}
+		</foreach>
+		AND c.controller_type = '01'
+	</select>
+	
+	<select id="getAllDeviceByRegionalId" resultType="com.bossbutler.pojo.regional.Device">
+		select DISTINCT 
+			d.device_id as deviceId,
+			d.serial_number as serialNumber,
+			d.controller_id as controllerId,
+			c.controller_type as controllerType,
+			d.device_code as deviceCode,
+			d.device_name deviceName,
+			d.device_type deviceType,
+			d.device_remark deviceRemark,
+			rar.regional_id
+		from
+			regional_arrange_relation rar
+		inner join arrange a 
+			on a.arrange_id=rar.arrange_id
+		inner JOIN arrange_device ad 
+			on a.arrange_id=ad.arrange_id
+		INNER JOIN device d 
+			on ad.device_id=d.device_id
+		INNER JOIN controller c 
+			on d.controller_id=c.controller_id	
+		where regional_id in
+		<foreach collection="list" item="model" open="(" separator=","
+			close=")">
+			#{model}
+		</foreach>
+	</select>
+	
+	
+	<select id="getProjectByRegionalId" resultType="com.bossbutler.pojo.project.Project">
+		select
+		p.*,p.project_id projectId,p.project_name
+		projectName,o2.org_name,o.supper_id as org_id from project p
+		LEFT JOIN
+		org_project_relation opr on opr.project_id=p.project_id
+		LEFT JOIN
+		regional r on r.org_id=opr.org_id
+		left join org o on
+		opr.org_id=o.org_id
+		INNER JOIN org o2 on o2.org_id=o.supper_id
+		where
+		regional_id=#{id}
+	</select>
+	<insert id="createTransitList" parameterType="java.util.List">
+		INSERT INTO transit_list (
+		list_id,
+		account_code,
+		project_id,
+		device_code,
+		transit_code,
+		transit_type,
+		begin_date,
+		end_date,
+		begin_time,
+		end_time,
+		limit_count,
+		project_name,
+		org_name,
+		emp_name,
+		status_code,
+		status_time,
+		operator_id,
+		synch_state
+		)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(#{item.list_id},
+			#{item.account_code},
+			#{item.project_id},
+			#{item.device_code},
+			#{item.transit_code},
+			#{item.transit_type},
+			#{item.begin_date},
+			#{item.end_date},
+			#{item.begin_time},
+			#{item.end_time},
+			#{item.limit_count},
+			#{item.projectName},
+			#{item.org_name},
+			#{item.emp_name},
+			#{item.status_code},
+			#{item.status_time},
+			#{item.operator_id},
+			#{item.synch_state})
+		</foreach>
+	</insert>
+	<select id="getDeviceByContents" resultType="com.bossbutler.pojo.regional.Device">
+		select 
+			d.device_id as deviceId,
+			d.device_code as deviceCode,
+			c.controller_type as controllerType,
+			d.serial_number as serialNumber,
+			'device' as deviceType 
+		from device d
+		LEFT JOIN arrange_device ad 
+			on d.device_id=ad.device_id
+		INNER JOIN controller c 
+			on d.controller_id=c.controller_id
+		WHERE 1=1
+		<if test="contents!=null and contents.size()!=0">
+			and ad.arrange_id in
+			<foreach collection="contents" item="model" open="("
+				separator="," close=")">
+				#{model}
+			</foreach>
+		</if>
+		<if test="contents==null or contents.size()==0">
+			and ad.arrange_id = -1
+		</if>
+		UNION
+
+		select DISTINCT 
+			p.project_id,
+			p.project_code,
+			"",
+			"",
+			project_name as deviceType 
+		from
+			project p
+		left join controller c on p.project_id=c.project_id
+		where
+		c.controller_id in (select d.controller_id from device d
+		LEFT JOIN
+		arrange_device ad on d.device_id=ad.device_id
+		WHERE 1=1
+		<if test="contents!=null and contents.size()!=0">
+			and ad.arrange_id in
+			<foreach collection="contents" item="model" open="("
+				separator="," close=")">
+				#{model}
+			</foreach>
+		</if>
+		<if test="contents==null or contents.size()==0">
+			and ad.arrange_id = -1
+		</if>
+		)
+	</select>
+	<insert id="createVisitorApply" useGeneratedKeys="false"
+		keyProperty="relation_id">
+		INSERT INTO visitor_apply (
+			relation_id,
+			visitor_id,
+			<if test="apply_type != null and apply_type != '' ">
+				apply_type,
+			</if>
+			<if test="source_type !=null and source_type !='' ">
+				source_type,
+			</if>
+			<if test="begin_date != null and begin_date != '' ">
+				begin_date,
+			</if>
+			<if test="end_date != null and end_date != '' ">
+				end_date,
+			</if>
+			<if test="begin_time != null and begin_time != '' ">
+				begin_time,
+			</if>
+			<if test="end_time != null and end_time != '' ">
+				end_time,
+			</if>
+			item_num,
+			status_code,
+			status_time,
+			create_time,
+			update_time,
+			operator_id,
+			project_id,
+			visitor_code,
+			transit_devices,
+			contents,
+		<if test="account_id != null and account_id != 0 ">
+			account_id,
+		</if>
+			remark
+		)
+		VALUES
+			(
+				#{relation_id} ,
+				#{visitor_id} ,
+			<if test="apply_type != null and apply_type != '' ">
+				#{apply_type},
+			</if>
+			<if test="source_type !=null and source_type !='' ">
+				#{source_type},
+			</if>
+			<if test="begin_date != null and begin_date != '' ">
+				#{begin_date} ,
+			</if>
+			<if test="end_date != null and end_date != '' ">
+				#{end_date} ,
+			</if>
+			<if test="begin_time != null and begin_time != '' ">
+				#{begin_time} ,
+			</if>
+			<if test="end_time != null and end_time != '' ">
+				#{end_time} ,
+			</if>
+				#{item_num} ,
+				#{status_code} ,
+				<![CDATA[
+				NOW(),
+				NOW(),
+				NOW(),
+				]]>
+				#{operator_id} ,
+				#{project_id} ,
+				#{visitor_code} ,
+				#{transit_devices},
+				#{contents} ,
+		<if test="account_id != null and account_id != 0 ">
+			#{account_id},
+		</if>
+				#{remark} 
+			)
+		
+	</insert>
+	<insert id="createVisitorMedia">
+		insert into visitor_media
+		(
+		media_id,
+		visitor_id,
+		ordinal,
+		main_classify,
+		media_type,
+		file_type,
+		media_no,
+		create_time,
+		remark
+		)values(
+		#{media_id},
+		#{visitor_id},
+		#{ordinal},
+		#{main_classify},
+		#{media_type},
+		#{file_type},
+		#{media_no},
+		sysdate(),
+		#{remark}
+		)
+	</insert>
+	<select id="hasOtherIc" resultType="com.bossbutler.pojo.regional.VisitorMedia">
+		select * from visitor_media
+		where visitor_id=#{visitor_id} and media_type = '61107'
+	</select>
+	<select id="findByVisitorCode" resultType="com.bossbutler.pojo.visitor.VisitorApply">
+		select
+		relation_id, visitor_id, account_id, project_id, visitor_code, contents,
+		begin_date beginDate,
+		end_date endDate, begin_time beginTime, end_time endTime, limit_count, status_code, status_time,
+		create_time,
+		update_time, operator_id, data_version, item_num
+		from visitor_apply
+		where visitor_code =#{code}
+	</select>
+	<delete id="deleteLongtermByVisitorId">
+		delete from visitor_apply where apply_type is not null and  visitor_id = #{visitorId}
+	</delete>
+	<select id="findLongtermByVisitorId" resultType="com.bossbutler.pojo.visitor.VisitorApply">
+		select
+		relation_id, visitor_id, account_id, project_id,apply_type, visitor_code, contents,
+		begin_date beginDate,
+		end_date endDate, begin_time beginTime, end_time endTime, limit_count, status_code, status_time,
+		create_time,
+		update_time, operator_id, data_version, item_num
+		from visitor_apply
+		where apply_type is not null and  visitor_id = #{visitorId}
+	</select>
+	<select id="getPublicAllArrange" resultType="com.bossbutler.pojo.regional.ArrangeModel">
+		select * from
+		arrange where project_id=#{id}
+	</select>
+	<insert id="addArrangeToRegional" useGeneratedKeys="false"
+		keyProperty="relation_id" parameterType="java.util.List">
+		INSERT INTO regional_arrange_relation (
+		relation_id,
+		regional_id,
+		arrange_id
+		) VALUES
+		<foreach collection="list" item="item" separator=",">
+			(
+			#{item.relation_id},
+			#{item.regional_id},
+			#{item.arrange_id}
+			)
+		</foreach>
+	</insert>
+	<delete id="deleteArrange">
+		DELETE from regional_arrange_relation where regional_id=#{regionalId}
+	</delete>
+	<delete id="deleteVisitorMedia">
+		delete from visitor_media where media_id=#{mediaId}
+	</delete>
+	<select id="getProjectById" resultType="com.bossbutler.pojo.project.Project">
+		select p.*,p.admin_org
+		adminOrg,p.project_id projectId,p.project_name projectName,project_code projectCode 
+		from project p
+		where p.project_id=#{projectId}
+	</select>
+	<update id="updatePhoneNumber">
+		update visitor set  mobilephone=#{phone},operator_id=#{operatorId} where visitor_id = #{visitorId}
+	</update>
+	<select id="getRegionalByOrgId" resultType="com.bossbutler.pojo.regional.RegionalModel">
+		select * from regional where regional_id=#{orgId}
+	</select>
+	<insert id="createRegional" useGeneratedKeys="false"
+		keyProperty="regional_id">
+		    <![CDATA[
+        INSERT INTO regional (
+        	regional_id,
+			org_id,
+			supper_id,
+			regional_type,
+			terminal_id,
+			regional_name,
+			status_code,
+			status_time,
+			create_time,
+			update_time
+        ) VALUES (
+        	#{regional_id} ,
+        	#{org_id} ,
+        	#{supper_id},
+        	#{regional_type},
+        	#{terminal_id},
+        	#{regional_name},
+        	#{status_code},
+        	now(),
+        	now(),
+        	now()
+        )
+    ]]>
+	</insert>
+	<update id="updateVisitorIcNo">
+		update visitor set iccard_code=#{icNo},operator_id=#{operatorId} where visitor_id = #{visitorId}
+	</update>
+	<update id="setTerminalTransitTime">
+		update terminal set  barcode_time=#{transitTime},operator_id=#{operatorId} where mac_address = #{mackAddress}
+	</update>
+	<select id="findTransitById" resultType="com.bossbutler.pojo.visitor.TerminalPojo">
+		SELECT * from terminal where (mac_address=#{mackAddress} or mac_address_lan=#{mackAddress})
+	</select>
+	<select id="queryVisitorByIcProject" resultType="com.bossbutler.pojo.regional.VisitorModel">
+		SELECT * from visitor where project_code=#{projectCode} and iccard_code =#{icNo}
+	</select>
+	<update id="setTerminalDesc">
+		update terminal set  terminal_desc=#{terminalDesc},operator_id=#{operatorId} where mac_address=#{mackAddress} or mac_address_lan=#{mackAddress}
+	</update>
+	<update id="setBarcodeRemark">
+		update terminal set  barcode_remark=#{barcodeRemark},operator_id=#{operatorId} where mac_address=#{mackAddress} or mac_address_lan=#{mackAddress}
+	</update>
+	<select id="getOrgyProId" resultType="com.bossbutler.pojo.org.OrgProjectRelation">
+		SELECT o.org_id orgId from org_project_relation opr
+		LEFT JOIN org o on o.org_id=opr.org_id
+		where opr.project_id=#{projectId} and o.duty_type='0301' LIMIT 0,1
+	</select>
+	<select id="findOrgListByPId" resultType="com.bossbutler.pojo.org.OrgProjectRelation">
+		SELECT relation_id relationId,org_id orgId from org_project_relation where project_id=#{projectId}
+	</select>
+	<select id="queryVisitorOrdinal" resultType="imagepojo">
+		select ifnull(max(ordinal),0)+1
+		as ordinal from visitor_media where
+		main_classify=#{mainClassify} and
+		media_type=#{mediaType} and visitor_id = #{visitorId}
+	</select>
+	<select id="getApplyTypes" resultType="com.bossbutler.pojo.visitor.VisitorApplyType">
+		SELECT * from dictionary_data where type_id=#{typeId}
+	</select>
+	<select id="getVisitorApply" resultType="com.bossbutler.pojo.wx.MiniVisitorApplyInfo">
+		select p.project_name projectName,
+				pp.profile projectProfile,
+				s.org_name orgName,
+				op.profile orgProfile,
+				va.account_id accountId,
+				va.project_id projectId,
+				va.org_id orgId
+		from visitor_apply va 
+		left join project p on va.project_id = p.project_id
+		left join project_profile pp on p.project_id=pp.project_id and pp.type = '70402'
+		left join org o on va.org_id = o.org_id
+		left join org s on o.supper_id = s.org_id
+		left join org_profile op on op.org_id = o.org_id and op.type = '70402'
+		where va.visitor_code = #{visitorCode}
+	</select>
+	<select id="selectVisitorApplyResultCount" resultType="integer">
+		select count(*) from visitor_apply va
+		join visitor v on v.visitor_id = va.visitor_id
+		where
+		va.relation_id = #{applyId}
+		and va.project_id = #{projectId}
+		and va.transit_devices like CONCAT('%',#{deviceTransit},'%')
+		and v.transit_code = #{transitCode}
+		and CURRENT_DATE() between va.begin_date and va.end_date
+		and CURRENT_TIME() between va.begin_time and va.end_time
+	</select>
+	
+	<select id="queryDynamic" resultMap="BaseResultMap" >
+   		select 
+    	 	va.relation_id, 
+    	 	va.visitor_id,
+    	 	va.apply_type,
+    	 	va.account_id,
+    	 	va.project_id,
+    	 	va.begin_date, 
+    	 	va.end_date,
+    	 	va.begin_time,
+    	 	va.end_time,
+    	 	va.limit_count,
+    	 	va.status_code,
+    	 	va.status_time,
+    	 	va.create_time, 
+    	 	va.update_time,
+    	 	va.operator_id,
+    	 	v.visitor_name as visitorName,
+    	 	v.transit_code as transitCode,
+    	 	va.transit_devices as transitDevices,
+    	 	va.traffic_strategy as trafficStrategy
+    from
+    	visitor_apply va
+    left join visitor v
+    	on va.visitor_id=v.visitor_id
+    <where>
+    	<if test="model.sourceType !=null and model.sourceType !=''">
+			and va.source_type =#{model.sourceType}
+		</if>
+    	<if test="model.projectId !=null and model.projectId !=''">
+			and va.project_id=#{model.projectId}
+		</if>
+		<if test="model.visitorId !=null and model.visitorId !=''">
+			and va.visitor_id=#{model.visitorId}
+		</if>
+		<if test="model.relationId !=null and model.relationId !=''">
+			and va.relation_id=#{model.relationId}
+		</if>
+		<if test="model.statusCode !=null and model.statusCode !=''">
+			and va.status_code=#{model.statusCode}
+		</if>
+    </where>
+    
+  </select>
+</mapper>

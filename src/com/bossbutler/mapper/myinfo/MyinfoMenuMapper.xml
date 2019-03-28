@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.myinfo.MyinfoMenuMapper">
+	<select id="queryinfo" resultType="myinfo" parameterType="string">
+		select a.account_id as accountId,a.login_name as realname,a.login_name as name,a.mobilephone as phone,
+		case when a.gender='1' then '男' when a.gender='0' then '女' else '未设置' end as	sex,
+		ifnull(score,5.0) score, ifnull(billCount,0) billCount
+		from account a left join (
+			select account_id,
+			round(sum(se.skills+se.attitude+se.image+se.efficient)/4/count(account_id),1) as score,
+			(select count(1) from service_progress sp where sp.operator_id = #{accountId} and sp.status_code = '06' ) as billCount
+			from service_evaluation se 
+			group by account_id
+		) t on a.account_id = t.account_id
+		where a.account_id=#{accountId}
+	</select>
+	<select id="querymore" resultType="myinfomore" parameterType="string">
+		select a.name,a.realname,a.sex,a.supper,b.org_name as company,phone,b.org_id as orgId,
+		a.account_id as accountId,
+		ifnull(score,0) score, ifnull(billCount,0) billCount
+		from (
+			select a.account_id,a.login_name as name,b.emp_name as realname,case when
+			b.gender='1' then '男' when b.gender='0' then '女' else '未知' end as
+			sex,c.supper_id as supper,a.mobilephone as phone,score,billCount
+			from account a left join emp b on a.account_id=b.account_id
+			join org c on b.org_id=c.org_id left join (
+				select account_id,
+				round(sum(se.skills+se.attitude+se.image+se.efficient)/4/count(account_id),1) as score,
+				(select count(1) from service_progress sp where sp.operator_id = #{accountId} and sp.status_code = '06' ) as billCount
+				from service_evaluation se 
+				group by account_id
+			) t on a.account_id = t.account_id
+			where a.account_id=#{accountId}
+		) a join org b on a.supper=b.org_id limit 1
+	</select>
+	<!-- <select id="queryCompanies" parameterType="string" resultType="com.bossbutler.pojo.MyCompany">
+		select distinct real_org_id as companyId, real_org_name companyName from vi_emp_info a 
+		where a.account_id=#{accountId}
+	</select> -->
+	
+	<select id="queryCompanies" parameterType="string" resultType="com.bossbutler.pojo.MyCompany">
+		SELECT
+			c.org_id as companyId,
+			c.org_name as companyName
+		FROM
+			emp a
+		JOIN org b ON a.org_id = b.org_id
+		JOIN org c ON b.supper_id = c.org_id
+		WHERE
+			a.account_id =#{accountId}
+			AND a.status_code = '01'
+	
+	</select>
+	<select id="querylist" resultType="company" parameterType="string">
+		select b.org_id as companyId,b.org_name as companyName from emp a join
+		org b on a.org_id=b.org_id
+		where a.account_id=#{accountId}
+	</select>
+	<select id="queryCompany" resultType="companyxq" parameterType="string">
+		select a.org_name as companyName,c.city_name as city,b.address as
+		address,b.telephone as phone from org a left join org_info b on
+		a.org_id=b.org_id left join city c on b.city_id=c.city_id
+		where
+		a.org_id=#{companyId}
+	</select>
+	<update id="updateMyinfo">
+		update account a set a.login_name=#{name}
+		where a.account_id=#{accountId}
+	</update>
+	<update id="updateSex">
+		update account a set a.gender=#{sex}
+		where a.account_id=#{accountId}
+	</update>
+	<update id="updateLoginId">
+		update account a set a.login_id=#{name}
+		where a.account_id=#{accountId}
+	</update>
+</mapper>

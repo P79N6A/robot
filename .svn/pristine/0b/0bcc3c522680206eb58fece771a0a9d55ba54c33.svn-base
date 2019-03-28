@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>中星城</title>
+    <link href="favicon.ico" type="image/x-icon" rel="icon">
+    <link href="styles/idangerous.swiper.css" rel="stylesheet"/>
+    <link href="styles/index.css?t=2018110301" rel="stylesheet"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body style="background-color:#efefef">
+
+<div class="swiper-container">
+    <div class="swiper-wrapper">
+        <div class="swiper-slide"><img src="styles/images/data/adv_1.png" width="100%" height="100%"/></div>
+        <div class="swiper-slide"><img src="styles/images/data/adv_1.png" width="100%" height="100%"/></div>
+        <div class="swiper-slide"><img src="styles/images/data/adv_1.png" width="100%" height="100%"/></div>
+    </div>
+
+    <div class="pagination"></div>
+</div>
+
+<div class="ui-feeds-index">
+    <ul>
+        <li class="index-li">
+            <a href="https://m.mallcoo.cn/a/home/10557">
+                <div class="index-life">
+                    <img src="styles/images/life.png" class="life-logon" alt=""/>
+                    <div class="life-title index-title">中星生活广场</div>
+                    <div class="life-desc index-desc">超市•餐饮•教育•娱乐</div>
+                </div>
+            </a>
+        </li>
+        <li class="index-right">
+            <ul class="index-right-vul">
+                <li class="index-right-vul-topli">
+                    <a href="https://mp.weixin.qq.com/s/T3P45t11cGqHhvarzxQwSA" style="height: 100%;">
+                        <div class="index-hotel">
+                            <img src="styles/images/hotel.png" class="hotel-logon small-logon" alt=""/>
+                            <div class="hotel-right">
+                                <div class="hotel-title index-title">五星级酒店</div>
+                                <div class="hotel-desc index-desc">高档•优质•快捷</div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                <li class="index-right-vul-fli">
+                    <ul class="index-right-hul">
+                        <li class="index-right-hul-li">
+                            <a href="http://m.mallcoo.cn/a/parking/10556/Home_Index?pid=263">
+                                <div class="index-carstop">
+                                    <img src="styles/images/carstop.png" class="carstop-logon small-logon" alt=""/>
+
+                                    <div class="carstop-title index-title">智慧停车</div>
+                                    <div class="carstop-desc index-desc">智能•便捷•优惠</div>
+
+                                </div>
+                            </a>
+                        </li>
+                        <li class="li-split"></li>
+                        <li class="index-right-hul-li">
+                            <a href="https://mp.weixin.qq.com/s/NjN0QsIsg6wN9m2VdJ4t6g">
+                                <div class="index-whitework index-carstop">
+                                    <img src="styles/images/whitework.png" class="whitework-logon small-logon" alt=""/>
+
+                                    <div class="whitework-title index-title">白领生活</div>
+                                    <div class="whitework-desc index-desc">健身•活动•共享</div>
+
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="recommend-div">
+    <div class="titleLeft">
+        <h2>强力推荐</h2>
+    </div>
+
+    <div class="imglist">
+        <div class="imgbox">
+            <img src="styles/images/data/adv_2.jpg" alt="" class="imgadv"/>
+        </div>
+
+        <div class="imgbox">
+            <img src="styles/images/data/adv_3.jpg" alt="" class="imgadv"/>
+        </div>
+
+        <div class="imgbox">
+            <img src="styles/images/data/adv_4.jpg" alt="" class="imgadv"/>
+        </div>
+
+        <div class="imgbox">
+            <img src="styles/images/data/adv_5.jpg" alt="" class="imgadv"/>
+        </div>
+
+        <div class="imgbox">
+            <img src="styles/images/data/adv_6.jpg" alt="" class="imgadv"/>
+        </div>
+
+        <div class="divholder"></div>
+    </div>
+</div>
+
+<script src="scripts/zepto.min.js"></script>
+<script src="scripts/idangerous.swiper-2.0.min.js"></script>
+<script src="scripts/index.js?v=20180726"></script>
+</body>
+</html>
+

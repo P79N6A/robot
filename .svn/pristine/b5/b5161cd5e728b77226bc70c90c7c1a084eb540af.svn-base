@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.Information.InformationMapper">
+	<resultMap id="BaseResultMap" type="com.bossbutler.pojo.Information.Information">
+		<id column="info_id" property="infoId" jdbcType="BIGINT" />
+		<id column="info_id" property="infoIdJs" jdbcType="VARCHAR" />
+		<result column="info_type" property="infoType" jdbcType="CHAR" />
+		<result column="info_title" property="infoTitle" jdbcType="VARCHAR" />
+		<result column="contents" property="contents" jdbcType="VARCHAR" />
+		<result column="inscribe" property="inscribe" jdbcType="VARCHAR" />
+		<result column="org_id" property="orgId" jdbcType="BIGINT" />
+		<result column="project_id" property="projectId" jdbcType="BIGINT" />
+		<result column="org_type" property="orgType" jdbcType="CHAR" />
+		<result column="emp_type" property="empType" jdbcType="CHAR" />
+		<result column="status_code" property="statusCode" jdbcType="CHAR" />
+		<result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="plan_time" property="planTime" jdbcType="TIMESTAMP" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+		<result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+		<result column="is_read" property="isRead" jdbcType="CHAR" />
+		
+		<result property="projectName" column="project_name"></result>
+		<result property="dutyType" column="duty_type" />
+		<result property="accountId" column="account_id" />
+	</resultMap>
+
+	<resultMap id="infoGroupM" type="com.bossbutler.pojo.Information.InformationGroup">
+		<result column="info_type_name" property="infoTypeName" jdbcType="CHAR" />
+		<result column="info_type" property="infoType" jdbcType="CHAR" />
+		<result column="info_title" property="infoTitle" jdbcType="VARCHAR" />
+		<result column="contents" property="contents" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		info_id, info_type, info_title, contents, inscribe, org_id, project_id,
+		org_type, emp_type, status_code, status_time, create_time, update_time,
+		plan_time, operator_id, data_version
+	</sql>
+	<select id="queryPageList" resultMap="BaseResultMap" parameterType="hashmap">
+		select			
+			DISTINCT
+			info.info_id,
+			info.info_type,
+			info.info_title,
+			case when INSTR(info.contents, '{') = 1 then info.contents else CONCAT(left(info.contents, 50),"...") end as contents,
+			info.inscribe,
+			info.org_id,
+			info.project_id,
+			project.project_name,
+			info.org_type,
+			info.emp_type,
+			info.status_code,
+			info.status_time,
+			info.create_time,
+			info.update_time,
+			info.plan_time,
+			info.operator_id,
+			case when (tinfoLog.info_id is null or tinfoLog.status_code = '02') then '0' else '1' end is_read
+		from information info
+		join (
+			select emp.org_id, org.duty_type, epr.project_id, case when org.admin_id = #{accountId} then '01' else '02' end as emp_type
+			from emp
+			left join org on emp.org_id = org.org_id
+			left join emp_project_relation epr on emp.emp_id = epr.emp_id
+			where emp.status_code = '01' and emp.account_id = #{accountId}
+		) tpemp on info.project_id = tpemp.project_id
+		left join project on info.project_id=project.project_id
+		left join (
+			select info_id,status_code
+			from information_log
+			where account_id = #{accountId}
+		) tinfoLog on info.info_id = tinfoLog.info_id
+		where  info.status_code != '01' and
+		(if (
+		    info.info_type = '01',  
+		    info.account_id = #{accountId},
+		    1 != 1  
+		) || if (
+		    info.info_type = '02',  
+		    (case when tpemp.emp_type = '02' then info.emp_type = '02' else 1 = 1 end
+				&amp;&amp; (info.org_type='01' ||
+				case when tpemp.duty_type = '0302' then  info.org_type = '04'
+						 when tpemp.duty_type = '0301' then info.org_type = '03' else 1 !=1 end ||
+				case when info.org_id = tpemp.org_id then info.org_type = '02' else 1 !=1 end)),
+		    1 != 1))
+		<if test="infoType !=null and infoType !=''">
+			and info.info_type = #{infoType}
+		</if>
+		order by info.status_time desc
+	</select>
+	<select id="countUnReadByTypeAi" resultType="java.lang.String" parameterType="hashmap">
+		SELECT
+			ifnull(sum(CASE WHEN (a.logInfoId is null or a.logStatusCode = '02') THEN 1 ELSE 0 END ), 0) as noMessageCount
+		FROM (select
+					DISTINCT
+					info.info_id as infoId,
+					info.info_title as title,
+					info.info_type,
+					tinfoLog.info_id as logInfoId,
+					tinfoLog.status_code as logStatusCode
+				from information info
+				join (
+					select emp.org_id, org.duty_type, epr.project_id, case when org.admin_id = #{accountId} then '01' else '02' end as emp_type
+					from emp
+					left join org on emp.org_id = org.org_id
+					left join emp_project_relation epr on emp.emp_id = epr.emp_id
+					where emp.status_code = '01' and emp.account_id = #{accountId}
+				) tpemp on info.project_id = tpemp.project_id
+				left join (
+					select info_id,status_code
+					from information_log
+					where account_id = #{accountId}
+				) tinfoLog on info.info_id = tinfoLog.info_id
+				where info.status_code != '01' and
+				(if (
+				    info.info_type = '01',  
+				    info.account_id = #{accountId},
+				    1 != 1  
+				) || if (
+				    info.info_type = '02',  
+				    (case when tpemp.emp_type = '02' then info.emp_type = '02' else 1 = 1 end
+						&amp;&amp; (info.org_type='01' ||
+						case when tpemp.duty_type = '0302' then  info.org_type = '04'
+								 when tpemp.duty_type = '0301' then info.org_type = '03' else 1 !=1 end ||
+						case when info.org_id = tpemp.org_id then info.org_type = '02' else 1 !=1 end)),
+				    1 != 1))) a
+		where a.info_type = #{infoType}
+	</select>
+	<select id="queryGroupList" resultMap="infoGroupM" parameterType="hashmap">
+		select
+			i.info_type,
+			case
+				when i.info_type = '01' then '系统通知'
+				when i.info_type = '02' then '项目通知'
+				when i.info_type = '03' then '账单提醒'
+				when i.info_type = '04' then '租约到期'
+			end as info_type_name,
+			date_format(max(i.plan_time),'%Y-%m-%d %H:%i:%s') create_time,
+			i.info_title, i.contents
+		from (select
+					DISTINCT
+					info.info_id as infoId,
+					info.info_title,
+					info.info_type,
+					tinfoLog.info_id as logInfoId,
+					tinfoLog.status_code as logStatusCode,
+					info.contents,
+					info.plan_time
+				from information info
+				join (
+					select emp.org_id, org.duty_type, epr.project_id, case when org.admin_id = #{accountId} then '01' else '02' end as emp_type
+					from emp
+					left join org on emp.org_id = org.org_id
+					left join emp_project_relation epr on emp.emp_id = epr.emp_id
+					where emp.status_code = '01' and emp.account_id = #{accountId}
+				) tpemp on info.project_id = tpemp.project_id
+				left join (
+					select info_id,status_code
+					from information_log
+					where account_id = #{accountId}
+				) tinfoLog on info.info_id = tinfoLog.info_id
+				where info.status_code != '01' and
+				(if (
+				    info.info_type = '01',
+				    info.account_id = #{accountId},
+				    1 != 1  
+				) || if (
+				    info.info_type = '02',  
+				    (case when tpemp.emp_type = '02' then info.emp_type = '02' else 1 = 1 end
+						&amp;&amp; (info.org_type='01' ||
+						case when tpemp.duty_type = '0302' then  info.org_type = '04'
+								 when tpemp.duty_type = '0301' then info.org_type = '03' else 1 !=1 end ||
+						case when info.org_id = tpemp.org_id then info.org_type = '02' else 1 !=1 end)),
+				    1 != 1))
+				 ORDER BY info.plan_time DESC
+				) i
+		group by i.info_type order by i.info_type
+	</select>
+	<select id="findById" resultMap="BaseResultMap" parameterType="hashmap">
+		select
+		<include refid="Base_Column_List"></include>
+		from information i where i.info_id = #{id}
+	</select>
+
+
+	
+	<select id="queryInfor" resultMap="BaseResultMap">
+		select 
+			<include refid="Base_Column_List" /> 
+		from information
+		<where>
+			<if test="contents !=null and contents!=''">
+				and contents LIKE CONCAT("%",#{contents},"%")
+			</if>
+			<if test="accountId !=null and accountId !=''">
+				and account_id=#{accountId}
+			</if>
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.visitor.TransitLogMapper" >
+  <resultMap id="BaseResultMap" type="com.bossbutler.pojo.visitor.TransitLog" >
+    <id column="log_id" property="logId" jdbcType="BIGINT" />
+    <result column="log_type" property="logType" jdbcType="CHAR" />
+    <result column="transit_code" property="transitCode" jdbcType="CHAR" />
+    <result column="transit_type" property="transitType" jdbcType="CHAR" />
+    <result column="account_id" property="accountId" jdbcType="BIGINT" />
+    <result column="account_name" property="accountName" jdbcType="VARCHAR" />
+    <result column="project_id" property="projectId" jdbcType="BIGINT" />
+    <result column="device_code" property="deviceCode" jdbcType="CHAR" />
+    <result column="status_code" property="statusCode" jdbcType="CHAR" />
+    <result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+    <result column="status_remark" property="statusRemark" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="PassageLogResultMap" type="com.bossbutler.pojo.visitor.TransitLogDto" >
+    <id column="log_id" property="logId" jdbcType="BIGINT" />
+    <result column="pass_type_name" property="passTypeName" jdbcType="VARCHAR" />
+    <result column="device_name" property="passAddress" jdbcType="VARCHAR" />
+    <result column="create_time" property="passTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="MyPassageLogResultMap" type="com.bossbutler.pojo.visitor.TransitLogMyDto" >
+    <result column="project_name" property="projectName" jdbcType="VARCHAR" />
+    <result column="device_name" property="deviceName" jdbcType="VARCHAR" />
+    <result column="cur_date" property="curDate" jdbcType="VARCHAR" />
+    <result column="cur_time" property="curTime" jdbcType="VARCHAR" />
+    <result column="pass_type_name" property="passTypeName" jdbcType="VARCHAR" />
+    <result column="type_name" property="typeName" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    log_id, log_type, transit_code, transit_type, account_id, account_name, project_id, 
+    device_code, status_code, status_time, status_remark, create_time, update_time, operator_id, 
+    data_version
+  </sql>
+  <select id="queryPassageByPageList" resultMap="PassageLogResultMap" parameterType="java.lang.String" >
+	select t.log_id ,t.transit_code,t.device_code,
+	case when 
+	<if test="visitorId != null and visitorId != '' " >
+		t.log_type = '02'	
+	</if>
+	<if test="accountId != null and accountId != '' " >
+		t.log_type = '01'
+	</if>
+	then '进' 
+	when 
+	<if test="visitorId != null and visitorId != '' " >
+		t.log_type = '12'	
+	</if>
+	<if test="accountId != null and accountId != '' " >
+		t.log_type = '11'
+	</if>
+	then '出' end pass_type_name,
+	date_format(t.create_time,'%Y-%m-%d %H:%i') create_time,d.device_name from 
+	(select * from transit_log t where 
+	<if test="visitorId != null and visitorId != '' " >
+		t.log_type = '02' or t.log_type = 12
+	</if>
+	<if test="accountId != null and accountId != '' " >
+		t.log_type = '01' or t.log_type = 11
+	</if>
+	)
+	t left join device d on t.device_code =d.device_code
+	<where>
+		<if test="visitorId != null and visitorId != '' " >
+		 t.transit_code = (select transit_code from visitor where visitor_id = #{visitorId})
+		</if>
+		<if test="accountId != null and accountId != '' " >
+		 t.account_code = (select account_code  from account t where t.account_id = #{accountId})
+		</if>
+	</where>
+  </select>
+   <select id="queryMyByAccountDate" resultMap="MyPassageLogResultMap" parameterType="java.lang.String" >
+   		select 
+			date_format(a.transit_date, '%Y-%m-%d') cur_date,
+	  		date_format(a.begin_time, '%H:%i:%s') cur_time,
+    		'最早进入' as pass_type_name,
+			b.project_name,
+			d.device_name,
+			'' as type_name
+		from biz_transit_extract a 
+		join (
+			select 
+				min(bte.begin_time) begin_time,
+				bte.business_id,
+				bte.transit_date 
+			from biz_transit_extract bte
+			WHERE
+				date_format(bte.transit_date, '%Y-%m') =#{date}
+				and bte.business_id =#{accountId}
+			group by  bte.transit_date
+		)ac on a.begin_time=ac.begin_time and a.business_id=ac.business_id and a.transit_date=ac.transit_date
+		left join project b
+			on a.project_id=b.project_id
+		left join device d 
+			on a.in_device = d.device_code
+		
+		UNION 
+		select 
+			IFNULL(date_format(a.transit_date, '%Y-%m-%d'),"") cur_date,
+			IFNULL(date_format(a.end_time, '%H:%i:%s'),"") cur_time,
+			'最晚离开' AS pass_type_name,
+			b.project_name,
+			IFNULL(d.device_name,'暂无数据'),
+			'' AS type_name
+		from biz_transit_extract a 
+		join (
+			select 
+				max(bte.end_time) end_time,
+				bte.business_id,
+				bte.transit_date 
+			from 
+				biz_transit_extract bte
+			WHERE
+				date_format(bte.transit_date, '%Y-%m') =#{date}
+				and bte.business_id =#{accountId}
+			group by  bte.transit_date
+		)ac on (a.end_time=ac.end_time or ac.end_time is null) and a.business_id=ac.business_id and a.transit_date=ac.transit_date 
+		left join project b
+			on a.project_id=b.project_id
+		left join device d 
+			on a.out_device = d.device_code
+		group by cur_date
+		order by cur_date desc 
+   </select>
+   
+   
+  <!-- <select id="queryMyByAccountDate" resultMap="MyPassageLogResultMap" parameterType="java.lang.String" >
+	select date_format(tmp.create_time,'%Y-%m-%d') cur_date,date_format(tmp.create_time,'%H:%i:%s') cur_time,
+	tmp.pass_type_name,p.project_name,d.device_name,
+		case 
+		when 
+			tmp.log_type = '03' and tmp.transit_type = '00' 
+		then '远程开门-进' 
+		when 
+			tmp.log_type = '13' and tmp.transit_type = '00' 
+		then '远程开门-出' 
+		when 
+			tmp.transit_type = '00' and tmp.log_type = '01'
+		then '二维码-进' 
+		when 
+			tmp.transit_type = '00' and tmp.log_type = '11'
+		then '二维码-出' 
+		when 
+			tmp.transit_type = '00' 
+		then '二维码' 
+		when 
+			tmp.transit_type = '01' and tmp.log_type = '01'
+		then 'IC卡-进' 
+		when 
+			tmp.transit_type = '01' and tmp.log_type = '11'
+		then 'IC卡-出' 
+		when 
+			tmp.transit_type = '01'
+		then 'IC卡' 
+		else ''
+		end type_name
+	from (
+	select  t.*,'最晚离开' pass_type_name from 
+	(select b.in_out_time,
+			a.create_time,a.project_code,a.account_code,a.log_type,a.transit_type,a.device_code from transit_log a ,(
+			select in_out_time,max(create_time) create_time, max(t.account_code) account_code,project_code from (
+				select date_format(create_time, '%Y-%m-%d') in_out_time ,g.* 
+					from transit_log  g where account_code = 
+				(select account_code from account where account_id =  #{accountId}) 
+					and date_format(create_time, '%Y-%m') = #{date}
+			) t
+		group by in_out_time
+		) b where a.create_time = b.create_time and a.account_code = b.account_code 
+	)t
+	union 
+	select  t.*,'最早进入' pass_type_name from 
+		(select b.in_out_time,
+			a.create_time,a.project_code,a.account_code,a.log_type,a.transit_type,a.device_code from transit_log a ,(
+			select in_out_time, min(create_time) create_time, min(t.account_code) account_code,project_code from (
+				select date_format(create_time, '%Y-%m-%d') in_out_time ,g.* 
+					from transit_log  g where account_code = 
+				(select account_code from account where account_id =  #{accountId}) 
+					and date_format(create_time, '%Y-%m') = #{date}
+			) t
+		group by in_out_time
+		) b where a.create_time = b.create_time and a.account_code = b.account_code
+	  )	t
+	) tmp left join project p on tmp.project_code = p.project_code
+	left join device d on tmp.device_code = d.device_code
+	order by tmp.create_time desc
+  </select> -->
+  <select id="queryByVisitorId" resultMap="MyPassageLogResultMap" parameterType="java.lang.String" >
+	select 
+		date_format(tmp.result_time,'%Y-%m-%d') cur_date,
+		date_format(tmp.result_time,'%H:%i:%s') cur_time,
+		p.project_name,
+		d.device_name,
+		case 
+			when tmp.transit_type = '00' and tmp.entrance_type='01'
+				then '二维码-进' 
+			when tmp.transit_type = '00' and tmp.entrance_type='02'
+				then '二维码-出' 
+			when tmp.transit_type = '01' and tmp.entrance_type='01'
+				then 'IC卡-进' 
+			when tmp.transit_type = '01' and tmp.entrance_type='02'
+				then 'IC卡-出' 
+			when tmp.transit_type = '02' and tmp.entrance_type='01'
+				then '密码-进' 
+			when tmp.transit_type = '02' and tmp.entrance_type='02'
+				then '密码-出' 
+			else '通行' 
+		end type_name
+		from  
+			visitor_transit_log_biz  tmp 
+		left join project p 
+			on tmp.project_id = p.project_id
+		left join device d 
+			on tmp.device_code = d.device_code
+		where 
+			tmp.visitor_id = #{visitorId} 
+		order by 
+			tmp.create_time desc
+  </select>
+  
+  <select id="queryMyInfoByAccountDate" resultMap="MyPassageLogResultMap" parameterType="java.lang.String" >
+  		SELECT
+			date_format(a.result_time, '%m-%d') cur_date,
+			date_format(a.result_time, '%H:%i:%s') cur_time,
+			CASE
+				WHEN a.transit_type = '00' AND a.entrance_type = '01' 
+					THEN
+						'二维码-进'
+				WHEN a.transit_type = '00' AND a.entrance_type = '02' 
+					THEN
+						'二维码-出'
+				WHEN a.transit_type = '01' AND a.entrance_type = '01' 
+					THEN
+						'IC卡-进'
+				WHEN a.transit_type = '01' AND a.entrance_type = '02' 
+					THEN
+						'IC卡-出'
+				WHEN a.transit_type = '02' AND a.entrance_type = '01' 
+					THEN
+						'密码-进'
+				WHEN a.transit_type = '02' AND a.entrance_type = '02' 
+					THEN
+						'密码-出'
+				ELSE
+					'通行'
+			END AS pass_type_name,
+ 			p.project_name,
+ 			d.device_name
+		FROM
+			transit_log_biz a
+		LEFT JOIN project p 
+			ON a.project_id = p.project_id
+		LEFT JOIN device d 
+			ON a.device_code = d.device_code
+		WHERE
+			a.person_id = #{accountId}
+			AND date_format(a.result_time, '%Y-%m-%d') =#{date}
+		ORDER BY
+			a.result_time DESC
+  
+  </select>
+  
+  <!-- <select id="queryMyInfoByAccountDate" resultMap="MyPassageLogResultMap" parameterType="java.lang.String" >
+		select date_format(tmp.create_time,'%m-%d') cur_date,date_format(tmp.create_time,'%H:%i:%s') cur_time,
+		tmp.pass_type_name,p.project_name,d.device_name
+		from (
+		select  t.*,
+			case 
+			when 
+				t.log_type = '03' and t.transit_type = '00'
+			then '远程开门-进' 
+			when 
+				t.log_type = '13' and t.transit_type = '00'
+			then '远程开门-出' 
+			when 
+				t.transit_type = '00' and t.log_type = '01'
+			then '二维码-进' 
+			when 
+				t.transit_type = '00' and t.log_type = '11'
+			then '二维码-出' 
+			when 
+				t.transit_type = '00' 
+			then '二维码' 
+			when 
+				t.transit_type = '01' and t.log_type = '01'
+			then 'IC卡-进' 
+			when 
+				t.transit_type = '01' and t.log_type = '11'
+			then 'IC卡-出' 
+			when 
+				t.transit_type = '01'
+			then 'IC卡' 
+			else ''
+			end pass_type_name
+		from 
+		(select date_format(create_time, '%Y-%m-%d') in_out_time ,g.* from transit_log g where account_code = 
+		(select account_code from account where account_id =  #{accountId}) and date_format(create_time, '%Y-%m-%d') = #{date}
+		order by g.create_time desc) t
+		) tmp left join project p on tmp.project_code = p.project_code
+		left join device d on tmp.device_code = d.device_code
+  </select> -->
+  <select id="selectThirdTransitLogListByCondition" resultType="ThirdDRTransitInf">
+	 select
+		tLb.log_id as transitID,
+		DATE_FORMAT(tLb.result_time, '%Y-%m-%d %H:%i:%s') as transitTime,
+		tLb.transit_type as transitType,
+		ag.arrange_name as arrangeName,
+		tLb.entrance_type as entranceType
+	from transit_log_biz tLb
+	join device dc on dc.device_code = tLb.device_code
+	join arrange_device ad on dc.device_id = ad.device_id
+	join arrange ag on ag.arrange_id = ad.arrange_id
+	where tLb.person_type = '00' AND
+	tLb.person_id = #{condition.accountID} AND
+	tLb.project_id = #{condition.projectID} AND
+	tLb.result_time BETWEEN #{condition.beginDate} AND #{condition.endDate}
+	order by tLb.result_time desc
+	limit #{startIndex}, #{pageSize}
+  </select>
+  <select id="selectThirdTransitLogCountByCondition" resultType="integer">
+	select count(tLb.log_id) as count
+	from transit_log_biz tLb
+	join device dc on dc.device_code = tLb.device_code
+	join arrange_device ad on dc.device_id = ad.device_id
+	join arrange ag on ag.arrange_id = ad.arrange_id
+	where tLb.person_type = '00' AND
+	tLb.person_id = #{condition.accountID} AND
+	tLb.project_id = #{condition.projectID} AND
+	tLb.result_time BETWEEN #{condition.beginDate} AND #{condition.endDate}
+  </select>
+
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.visitor.UniqueCacheMapper">
+  <resultMap id="UniqueCacheMap" type="com.bossbutler.pojo.visitor.UniqueCache" >
+    <id column="cache_key" property="cacheKey" jdbcType="BIGINT" />
+    <result column="cache_type" property="cacheType" jdbcType="CHAR" />
+    <result column="identify_value" property="identifyValue" jdbcType="CHAR" />
+    <result column="random_value" property="randomValue" jdbcType="INTEGER" />
+    <result column="unique_value" property="uniqueValue" jdbcType="CHAR" />
+    <result column="status_code" property="statusCode" jdbcType="CHAR" />
+    <result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+  </resultMap>
+	<select id="queryUniqueValueByKey" resultMap="UniqueCacheMap">
+		select * from unique_cache where cache_key=#{relationid} and status_code = '01'
+	</select>
+</mapper>

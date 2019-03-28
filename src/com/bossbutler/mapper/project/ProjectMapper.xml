@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.project.ProjectMapper">
+	<resultMap id="BaseResultMap" type="com.bossbutler.pojo.project.Project">
+		<id column="project_id" property="projectId" jdbcType="BIGINT" />
+		<result column="project_code" property="projectCode" jdbcType="CHAR" />
+		<result column="project_name" property="projectName" jdbcType="VARCHAR" />
+		<result column="project_type" property="projectType" jdbcType="CHAR" />
+		<result column="admin_org" property="adminOrg" jdbcType="BIGINT" />
+		<result column="city_id" property="cityId" jdbcType="CHAR" />
+		<result column="district_id" property="districtId" jdbcType="CHAR" />
+		<result column="plate_id" property="plateId" jdbcType="CHAR" />
+		<result column="address" property="address" jdbcType="VARCHAR" />
+		<result column="description" property="description" jdbcType="VARCHAR" />
+		<result column="longitude" property="longitude" jdbcType="DECIMAL" />
+		<result column="latitude" property="latitude" jdbcType="DECIMAL" />
+		<result column="status_code" property="statusCode" jdbcType="CHAR" />
+		<result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+		<result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="Base_Column_List">
+		project_id, project_code, project_name, project_type,
+		admin_org, city_id,
+		district_id,
+		plate_id, address, description,
+		longitude, latitude, status_code, status_time,
+		create_time,
+		update_time, operator_id, data_version
+	</sql>
+	<select id="findByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from project
+		where project_id = #{projectId}
+	</select>
+	<select id="findByProjectCode" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from project
+		where project_code = #{projectCode}
+	</select>
+	<select id="getProjectByEmpId" resultType="com.bossbutler.pojo.project.Project">
+		SELECT p.*,p.project_id projectId,p.project_name
+		projectName,o.org_name,e.org_id from project p 
+		LEFT JOIN org_project_relation opr on opr.project_id=p.project_id
+		LEFT JOIN org o on o.org_id=opr.org_id 
+		LEFT JOIN emp e on e.org_id=opr.org_id 
+		where e.emp_id=#{empId}
+	</select>
+	<select id="queryProjectByVisitor" resultType="com.bossbutler.pojo.project.Project"
+	 parameterType="com.bossbutler.pojo.visitor.VisitorIn">
+		select distinct 
+			p.project_id projectIdStr,
+			p.project_name
+			projectName,
+			v.visitor_id visitorId,
+			pp.profile passProfile,
+			p.address 
+		from project p 
+		left join visitor v 
+			on p.project_code =  v.project_code and v.status_code = '01'
+		left join project_profile pp 
+			on p.project_id = pp.project_id and pp.type = 70402
+		where 
+			v.mobilephone = #{phone} 
+			and v.project_code is not null 
+			and v.status_code='01' 
+		<if test="idCardNo != null and idCardNo != '' ">
+			and v.idcard =  #{idCardNo}
+		</if>
+		<if test="projectCode != null and projectCode!= '' ">
+			and v.project_code= #{projectCode}
+		</if>
+		<if test="visitorId != null and visitorId !='' ">
+			and v.visitor_id= #{visitorId}
+		</if>
+	</select>
+	<select id="queryOrgByProjectId" resultType="com.bossbutler.pojo.org.Org"
+	 parameterType="com.bossbutler.pojo.visitor.VisitorIn">
+		select p.org_name orgName,o.org_id orgId,op.profile passProfile from org o 
+		left join org_project_relation opr on o.org_id = opr.org_id
+		left join org p on o.supper_id = p.org_id
+		left join org_profile op on o.org_id = op.org_id and op.type= 70402
+		where opr.project_id = #{projectId} and o.duty_type = '0302'
+		<if test="orgName != null and orgName !='' ">
+			and p.org_name like concat(concat('%',#{orgName}),'%')
+		</if>
+		order by  convert(p.org_name using gbk) asc
+	</select>
+	<select id="selectProjectListByAccountId" resultType="ThirdDRProject" parameterType="long">
+		select
+			pt.project_id as projectID,
+			pt.project_name as projectName,
+			pt.address as projectAddr,
+			ogt.org_id as orgID,
+			(ogt.admin_id = #{accountId}) as isAdmin,
+			ogt.org_name as orgName
+		from emp ep
+		join emp_project_relation ept on ept.emp_id = ep.emp_id
+		join project pt on pt.project_id = ept.project_id
+		join org og on og.org_id = ep.org_id
+		join org ogt on ogt.org_id = og.supper_id
+		where ep.status_code = '01' and ep.account_id = #{accountId}
+	</select>
+	<select id="getResourceNameByOrgIds" resultType="string" parameterType="string">
+		SELECT
+			group_concat(
+				DISTINCT concat(
+					d.arrange_name,
+					'-',
+					c.arrange_name
+				)
+			)
+		FROM
+			resource r
+		LEFT JOIN org_resource_relation orr ON r.resource_id = orr.resource_id
+		LEFT JOIN arrange_resource b ON orr.resource_id = b.resource_id
+		LEFT JOIN arrange c ON b.arrange_id = c.arrange_id
+		LEFT JOIN arrange d ON c.supper_id = d.arrange_id
+		WHERE
+			orr.org_id in(${orgId})
+			and c.entrance_type='01'
+	</select>
+	<select id="getProjectProfileByParam" resultType="string" parameterType="map">
+		select profile from project_profile 
+		where status_code = '01'
+		<if test="projectId != null and projectId != '' ">
+			and project_id = #{projectId}
+		</if>
+		<if test="type != null and type != '' ">
+			and type = #{type}
+		</if>
+		
+	</select>
+	
+	<select id="getProfileByParam" resultType="java.util.Map" parameterType="map">
+		select 
+			profile as profile,
+			project_id as projectId
+		from project_profile 
+		where status_code = '01'
+		<if test="projectId != null and projectId != '' ">
+			and project_id = #{projectId}
+		</if>
+		<if test="type != null and type != '' ">
+			and type = #{type}
+		</if>
+		<if test="projectIds !=null and projectIds.size>0">
+			<foreach collection="projectIds" item="item" open="and project_id in (" close=")" separator=","> 
+				${item}
+			</foreach>
+		</if>
+	</select>
+	<select id="selectProjectIdNameByAccountId" resultType="ComboProjectIdName" parameterType="long">
+		select DISTINCT epr.project_id projectID, pj.project_name projectName
+		from emp ep
+		join emp_project_relation epr on epr.emp_id = ep.emp_id
+		join project pj on pj.project_id = epr.project_id
+		where ep.status_code = '01'
+		<if test="accountId != null and accountId >0 ">
+		 	and ep.account_id = #{accountId}
+		</if>
+	</select>
+	<select id="selectCountByAccountIdProjectId" resultType="long">
+		select count(ep.emp_id)
+		from emp ep
+		join emp_project_relation epr on epr.emp_id = ep.emp_id
+		where ep.status_code = '01' and epr.project_id = #{projectId}
+		<if test="accountId != null and accountId > 0 ">
+		 	and ep.account_id = #{accountId}
+		</if>
+	</select>
+	
+	
+	<select id="getOrgListByProId" resultType="Map">
+		select 
+			a.org_id as orgId,
+			b.org_name as orgName
+		from org_project_relation a
+			left join org b on a.org_id=b.org_id
+		left join org c on b.supper_id=c.org_id
+		where a.project_id=#{projectId}
+		LIMIT 30
+	</select>
+	
+</mapper>

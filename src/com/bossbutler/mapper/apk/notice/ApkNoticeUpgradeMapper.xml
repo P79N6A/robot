@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.apk.notice.ApkNoticeUpgradeMapper">
+	<select id="selectHighestNoticeTypeTbApkNotice" resultType="com.bossbutler.pojo.apk.upgrade.TbApkNoticePo"
+		parameterType="string">
+		select
+			n.id, n.notice_type as noticeType, n.notice_way as noticeWay, n.font_color as fontColor,
+			n.notice_content as noticeContent, n.display_time as displayTime, n.app_type_id as appTypeId,
+			n.app_version as appVersion, n.app_system as appSystem, n.download_path_android as downloadPathAndroid,
+			n.download_path_ios as downloadPathIos, n.skip_path as skipPath, n.code as code,
+			n.html_title as htmlTitle, n.version_name as versionName
+		from tb_app_notice n
+		<if test="accountId != null and accountId != ''">
+			join tb_account_update au on n.id = au.notice_id
+		</if>
+		<where>
+			n.is_dele = '0'
+			and n.code = #{code}
+			and n.app_version = #{appVersion}
+			and (n.app_system = #{appSystem} or n.app_system is null)
+			<if test="accountId != null and accountId != ''">
+				and au.account_id = #{accountId}
+			</if>
+		</where>
+		order by n.notice_type limit 1
+	</select>
+	<select id="selectCountAccountUpdate" resultType="integer">
+		select count(*) from tb_account_update
+	</select>
+	
+	<select id="getCountAccountUpdateByPId" resultType="integer">
+		select count(*) from tb_account_update ta
+		left join emp e
+			on ta.account_id=e.account_id  
+		left join emp_project_relation epr
+			on e.emp_id=epr.emp_id
+		where e.status_code='01' and epr.project_id=#{projectId}
+	</select>
+	
+	
+	<insert id="insertAppUpgradeLog" >
+		insert into app_upgrade_log
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="logId != null">
+				log_id,
+			</if>
+			<if test=" accountId!= null">
+				account_id,
+			</if>
+			<if test="appSystem != null">
+				app_system,
+			</if>
+			<if test="appType != null">
+				app_type,
+			</if>
+			<if test="oldVersion != null">
+				old_version,
+			</if>
+			<if test="newVersion != null">
+				new_version,
+			</if>
+			<if test="noticeType != null">
+				notice_type,
+			</if>
+			<if test="requestParam != null">
+				request_param,
+			</if>
+			<if test="resultParam != null">
+				result_param,
+			</if>
+			
+			create_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="logId != null">
+				#{logId},
+			</if>
+			<if test="accountId != null">
+				#{accountId},
+			</if>
+			<if test="appSystem != null">
+				#{appSystem},
+			</if>
+			<if test="appType != null">
+				#{appType},
+			</if>
+			<if test="oldVersion != null">
+				#{oldVersion},
+			</if>
+			<if test="newVersion != null">
+				#{newVersion},
+			</if>
+			<if test="noticeType != null">
+				#{noticeType},
+			</if>
+			<if test="requestParam != null">
+				#{requestParam},
+			</if>
+			<if test="resultParam != null">
+				#{resultParam},
+			</if>
+			SYSDATE()
+		</trim>
+	</insert>
+	
+</mapper>

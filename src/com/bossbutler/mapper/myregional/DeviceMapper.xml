@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.myregional.DeviceMapper">
+	<resultMap id="deviceM" type="com.bossbutler.pojo.regional.Device">
+		<id column="device_id" property="deviceId" />
+		<result column="serial_number" property="serialNumber" />
+		<result column="controller_id" property="controllerId" />
+		<result column="device_code" property="deviceCode" />
+		<result column="device_name" property="deviceName" />
+		<result column="device_type" property="deviceType" />
+		<result column="device_remark" property="deviceRemark" />
+		<result column="server_ip" property="serverIp" />
+		<result column="server_port" property="serverPort" />
+		<result column="server_proc" property="serverProc" />
+		<result column="system_version" property="systemVersion" />
+		<result column="status_code" property="statusCode" />
+		<result column="status_time" property="statusTime" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+		<result column="operator_id" property="operatorId" />
+		<result column="data_version" property="dataVersion" />
+		<result column="controller_code" property="controllerCode" />
+		<result column="controller_type" property="controllerType" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		device_id,
+		serial_number,
+		controller_id,
+		device_code,
+		device_name,
+		device_type,
+		device_remark,
+		server_ip,
+		server_port,
+		server_proc,
+		system_version,
+		status_code,
+		status_time,
+		create_time,
+		update_time,
+		operator_id,
+		data_version
+	</sql>
+	
+	<select id="queryDynamic" resultMap="deviceM">
+		select
+			a.device_id,
+			a.serial_number,
+			a.controller_id,
+			a.device_code,
+			a.device_name,
+			a.device_type,
+			a.device_remark,
+			a.server_ip,
+			a.server_port,
+			a.server_proc,
+			a.system_version,
+			a.status_code,
+			ct.controller_type,
+			ct.controller_code 
+			
+		from device a
+		<if test="arrangeIds !=null and arrangeIds !=''">
+			join arrange_device b
+				on 	a.device_id=b.device_id
+		</if>
+		left join controller ct 
+			on ct.controller_id = a.controller_id
+		<where>
+			<if test="controllerId != null">
+				and a.controller_id = #{controllerId}
+			</if>
+			<if test="serialNumber !=null and serialNumber !=''">
+				and a.serial_number=#{serialNumber}
+			</if>
+			<if test="serialNumbers !=null and serialNumbers.size>0">
+				and a.serial_number in(
+				<foreach collection="serialNumbers" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
+			</if>
+			<if test="arrangeIds !=null and arrangeIds !=''">
+				b.arrange_id in (${arrangeIds})
+			</if>
+			or 1!=1
+		</where> 
+		
+	</select>
+	<select id="queryByArrangeTypeProjectID" resultMap="deviceM"
+		parameterType="String">
+		select distinct d.* from device d left join arrange_device ad on d.device_id = ad.device_id
+		left join regional_arrange_relation rar on ad.arrange_id = rar.arrange_id
+		left join regional_emp_relation rer on rar.regional_id = rer.regional_id
+		left join arrange a on ad.arrange_id = a.arrange_id
+		where rer.emp_id in (select emp_id from emp e where e.account_id = #{accountId})
+		and a.entrance_type = #{arrangeType} and a.project_id = #{projectId}
+	</select>
+	<select id="queryByArrangeId" resultMap="deviceM"
+		parameterType="String">
+		select 
+			distinct d.*,
+			ct.controller_type,
+			ct.controller_code 
+		from device d
+		left join controller ct on ct.controller_id = d.controller_id
+		left join arrange_device ad on d.device_id = ad.device_id
+		left join arrange a on ad.arrange_id = a.arrange_id
+		where FIND_IN_SET(a.arrange_id,getArrageParentList(#{arrangeId}))
+	</select>
+	<select id="queryByEntranceTypeProjectId" resultMap="deviceM"
+		parameterType="String">
+		select distinct d.*, ct.controller_type, ct.controller_code
+		from device d
+		left join controller ct on ct.controller_id = d.controller_id
+		left join arrange_device ad on d.device_id = ad.device_id
+		left join arrange a on ad.arrange_id = a.arrange_id
+		where a.entrance_type = #{entranceType} and a.project_id = #{projectId}
+		and a.arrange_id in (
+			select arrange_id from arrange a where FIND_IN_SET(arrange_id,getArrageParentList(#{arrangeIds}))
+		)
+		union all
+		select distinct d.*, ct.controller_type, ct.controller_code
+		from device d
+		left join controller ct on ct.controller_id = d.controller_id
+		left join arrange_device ad on d.device_id = ad.device_id
+		left join regional_arrange_relation rar on ad.arrange_id = rar.arrange_id
+		left join arrange a on ad.arrange_id = a.arrange_id
+		left join regional r on rar.regional_id = r.regional_id
+		where r.org_id in (select org_id from emp e where e.account_id = #{accountId})
+		and a.project_id = #{projectId} and r.regional_type = '03'
+	</select>
+	<select id="queryByEntranceTypeProjectIdNotAccountId" resultMap="deviceM"
+		parameterType="String">
+		select distinct d.*, ct.controller_type, ct.controller_code
+		from device d
+		left join controller ct on ct.controller_id = d.controller_id
+		left join arrange_device ad on d.device_id = ad.device_id
+		left join arrange a on ad.arrange_id = a.arrange_id
+		where a.entrance_type = #{entranceType} and a.project_id = #{projectId}  
+		<if test=" arrangeIds != null and arrangeIds != '' ">
+			and a.arrange_id in (
+				select arrange_id from arrange a where FIND_IN_SET(arrange_id,getArrageParentList(#{arrangeIds}))
+			)
+		</if>
+		<if test="orgId !=null and orgId !=''">
+			union all
+			select distinct d.*, ct.controller_type, ct.controller_code
+			from device d
+			left join controller ct on ct.controller_id = d.controller_id
+			left join arrange_device ad on d.device_id = ad.device_id
+			left join regional_arrange_relation rar on ad.arrange_id = rar.arrange_id
+			left join arrange a on ad.arrange_id = a.arrange_id
+			left join regional r on rar.regional_id = r.regional_id
+			where r.org_id =#{orgId}
+				and a.project_id = #{projectId} and r.regional_type = '03'
+		</if>
+		
+	</select>
+	<select id="queryByProjectIdOrOrgId" resultMap="deviceM"
+		parameterType="String">
+		select distinct d.*, ct.controller_type, ct.controller_code
+		from device d
+		left join controller ct on ct.controller_id = d.controller_id
+		left join arrange_device ad on d.device_id = ad.device_id
+		left join regional_arrange_relation rar on ad.arrange_id = rar.arrange_id
+		left join regional r on rar.regional_id = r.regional_id
+		<where>
+			and r.regional_type = '03'
+			<if test="projectId != '' and projectId != null">
+				and r.org_id=(select admin_org from project where project_id=#{projectId}) 
+			</if>
+			<if test="orgId != '' and orgId != null">
+				and r.org_id=#{orgId}
+			</if>
+		</where>
+	</select>
+	<select id="queryArrangeByAccountId" resultType="String"
+		parameterType="String">
+		select 
+			group_concat(ar.arrange_id) arrange_id 
+		from 
+			arrange_resource ar 
+		left join org_resource_relation orr 
+			on orr.resource_id = ar.resource_id
+		where 
+			orr.org_id in (select org_id from emp e where e.account_id = #{accountId} )	
+	</select>
+	<select id="queryArrangeByOrgId" resultType="String"
+		parameterType="String">
+		select 
+			group_concat(DISTINCT arrange_id) arrange_id 
+		from arrange_resource ar 
+		left join org_resource_relation orr 
+			on orr.resource_id = ar.resource_id
+		where orr.org_id =#{orgId}	
+	</select>
+	<select id="selectDeviceControlModelByDeviceCode" resultType="com.bossbutler.pojo.remote.DeviceControlModel" parameterType="String">
+		select
+			d.device_code deviceCode,
+			d.device_type deviceType,
+			d.serial_number serialNumber,
+			case
+				c.controller_type
+				when '03' then right(d.serial_number, 1)
+				else 0
+			end channel,
+			controller_code controllerCode,
+			c.controller_type controllerType,
+			d.status_code dstatusCode,
+			c.status_code statusCode,
+			IFNULL(d.uplink_status, '02') dUplinkStatus,
+			IFNULL(d.downlink_status, '02') dDownlinkStatus,
+			IFNULL(c.uplink_status, '02') cUplinkStatus,
+			IFNULL(c.downlink_status, '02') cDownlinkStatus,
+			c.project_id projectId
+		from device d left join controller c on c.controller_id = d.controller_id
+		where d.device_code = #{deviceCode}
+	</select>
+	<select id="selectDeviceStatusByProjectId" resultType="DeviceStatus" parameterType="long">
+		select
+			ct.controller_code as cCode,
+			CASE ct.controller_type
+				WHEN '03' THEN 0
+				ELSE -1
+			END as ty,
+			dc.device_name as dName,
+			CASE ct.controller_type
+				WHEN '03' THEN dc.serial_number
+				ELSE dc.device_code
+			END as dCode,
+			dc.status_code as statusCode,
+			dc.uplink_status as uplinkStatus,
+			dc.downlink_status as downlinkStatus,
+			CASE ct.controller_type WHEN '01' THEN 'FF'
+			ELSE dc.magnet_status
+			END as magnetStatus,
+			dc.device_type as deviceType, dc.device_code as deviceCode,
+			CASE
+				WHEN ((dc.keep_time is null) or (now() > dc.keep_time)) THEN 0
+				ELSE 1
+			END as isKeep,
+			case when tLi.device_code is null then 0 else tLi.count end as synFailFlag
+		from controller ct
+		join device dc 
+			on ct.controller_id = dc.controller_id
+		left join 
+			(select device_code,count(1) as count from transit_list_invalid group by device_code) tLi 
+				on tLi.device_code = dc.device_code
+		where 
+			dc.status_code in ('02','03','04') 
+			and ct.project_id = #{projectId}
+			<if test="status == 0">
+			and (dc.uplink_status = '02' or dc.downlink_status = '02')
+		</if>
+		order by 
+			dc.device_type,
+			ct.controller_type,
+			ct.controller_name,
+			dc.device_name
+	</select>
+	
+	<select id="selectControllerStatusByProjectId" resultType="DeviceStatus" parameterType="long">
+		select
+			1 as ty, ct.controller_name as dName,
+			ct.controller_code as dCode,
+			ct.status_code as statusCode,
+			ct.uplink_status as uplinkStatus, ct.downlink_status as downlinkStatus, 'FF' as magnetStatus,
+			'00' as deviceType, ct.controller_code as deviceCode, 0 as isKeep,
+			case when tLic.controller_code is null then 0 else tLic.count end as synFailFlag
+		from controller ct
+		left join (select controller_code,count(1) as count from transit_list_invalid group by controller_code) tLic on tLic.controller_code = ct.controller_code
+		where ct.status_code in ('02','03','04') and ct.project_id = #{projectId}
+		<if test="status == 0">
+			and (ct.uplink_status = '02' or ct.downlink_status = '02')
+		</if>
+	</select>
+	
+	<select id="selectDeviceStatusByProjectIdStatus" resultType="DeviceStatus">
+		select
+			1 as ty, ct.controller_name as dName,
+			ct.controller_code as dCode,
+			ct.status_code as statusCode,
+			ct.uplink_status as uplinkStatus, ct.downlink_status as downlinkStatus, 'FF' as magnetStatus, '00' as deviceType,
+			ct.controller_code as deviceCode, 0 as isKeep,
+			case when tLic.controller_code is null then 0 else tLic.count end as synFailFlag
+		from controller ct
+		left join (select controller_code, count(1) as count from transit_list_invalid group by controller_code) tLic on tLic.controller_code = ct.controller_code
+		where ct.status_code in ('02','03','04') and ct.project_id = #{projectId}
+		<if test="status == 0">
+			and (ct.uplink_status = '02' or ct.downlink_status = '02')
+		</if>
+		UNION ALL
+		select
+			CASE ct.controller_type
+				WHEN '03' THEN 0
+				ELSE -1
+			END as ty, dc.device_name as dName,
+			CASE ct.controller_type
+				WHEN '03' THEN dc.serial_number
+				ELSE dc.device_code
+			END as dCode, dc.status_code as statusCode, dc.uplink_status as uplinkStatus, dc.downlink_status as downlinkStatus,
+			CASE ct.controller_type
+				WHEN '01' THEN 'FF'
+				ELSE dc.magnet_status
+			END as magnetStatus, dc.device_type as deviceType, dc.device_code as deviceCode,
+			CASE
+				WHEN ((dc.keep_time is null) or (now() > dc.keep_time)) THEN 0
+				ELSE 1
+			END as isKeep,
+			case when tLi.device_code is null then 0 else tLi.count end as synFailFlag
+		from controller ct
+		join device dc on ct.controller_id = dc.controller_id
+		left join (select device_code, count(1) as count from transit_list_invalid group by device_code) tLi on tLi.device_code = dc.device_code
+		where dc.status_code in ('02','03','04') and ct.project_id = #{projectId}
+		<if test="status == 0">
+			and (dc.uplink_status = '02' or dc.downlink_status = '02')
+		</if>
+		ORDER BY dCode
+	</select>
+	<update id="updateKeepTime">
+		update device set keep_time = #{keepEndDate} where device_code = #{deviceCode}
+	</update>
+	<select id="selectTopLevelArrangeIdByDeviceCodes" resultType="hashmap">
+		select ar.arrange_id as arrangeId, dv.device_code as deviceCode, dv.serial_number as serialNumber
+		from arrange as ar
+		join arrange_device as ardv on ardv.arrange_id = ar.arrange_id
+		join device as dv on dv.device_id = ardv.device_id
+		<where>
+			ar.project_id = #{projectId}
+			and (dv.device_code
+			<foreach collection="deviceCodes" item="deviceCode" open="in (" close=")" separator=",">
+				#{deviceCode}
+			</foreach>
+			or dv.serial_number
+			<foreach collection="deviceCodes" item="deviceCode" open="in (" close=")" separator=",">
+				#{deviceCode}
+			</foreach>
+			)
+		</where>
+		order by ar.arrange_id asc
+	</select>
+</mapper>

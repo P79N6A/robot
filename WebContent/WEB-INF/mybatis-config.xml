@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<typeAliases>
+		<typeAlias alias="User" type="com.bossbutler.pojo.User" />
+		<typeAlias alias="Account" type="com.bossbutler.pojo.system.Account" />
+		<typeAlias alias="MobileMsgLog" type="com.bossbutler.pojo.MobileMsgLog" />
+		<typeAlias alias="MobileMsgTemplate" type="com.bossbutler.pojo.MobileMsgTemplate" />
+		<typeAlias alias="invitation" type="com.bossbutler.pojo.system.Invitation" />
+		<typeAlias alias="Employee" type="com.bossbutler.pojo.system.Employee" />
+		<typeAlias alias="hmServerBill" type="com.bossbutler.pojo.bill.HmServerBillOut" />
+		<typeAlias alias="ibServerBill" type="com.bossbutler.pojo.bill.IbServerBillOut" />
+		
+		
+		
+		
+		<typeAlias alias="passwordchange" type="com.bossbutler.pojo.Passwordchange" />
+		<typeAlias alias="myinfo" type="com.bossbutler.pojo.MyselfinfoPojo" />
+		<typeAlias alias="myinfomore" type="com.bossbutler.pojo.MyinfoMorePojo" />
+		<typeAlias alias="company" type="com.bossbutler.pojo.CompanyPojo" />
+		<typeAlias alias="companyxq" type="com.bossbutler.pojo.MyCompanyPojo" />
+		<typeAlias alias="visitor" type="com.bossbutler.pojo.VisitorPojo" />
+		<typeAlias alias="myvisitor" type="com.bossbutler.pojo.MyvisitorPojo" />
+		<typeAlias alias="regional" type="com.bossbutler.pojo.RegionalPojo" />
+		<typeAlias alias="arrange" type="com.bossbutler.pojo.MyArrangePojo" />
+		<typeAlias alias="device" type="com.bossbutler.pojo.DevicePojo" />
+		<typeAlias alias="imagepojo" type="com.bossbutler.pojo.ImagePojo" />
+		<typeAlias alias="customer" type="com.bossbutler.pojo.CusServerPojo" />
+		<typeAlias alias="serverdetail" type="com.bossbutler.pojo.CusServerDetailPojo" />
+		<typeAlias alias="propertytype" type="com.bossbutler.pojo.ServiceTypePojo" />
+		<typeAlias alias="proterty" type="com.bossbutler.pojo.PropertyServerPojo" />
+		<typeAlias alias="myemp" type="com.bossbutler.pojo.MyempPojo" />
+		<typeAlias alias="severprogress" type="com.bossbutler.pojo.ProjectProcessPojo" />
+		<typeAlias alias="serverproject" type="com.bossbutler.pojo.ProjectPojo" />
+		<typeAlias alias="servicer" type="com.bossbutler.pojo.ServicerPojo" />
+		<typeAlias alias="ThirdDRUserInf" type="com.bossbutler.pojo.third.ThirdDRUserInf" />
+		<typeAlias alias="ThirdDRProject" type="com.bossbutler.pojo.third.ThirdDRProject" />
+		<typeAlias alias="ThirdDRTransitInf" type="com.bossbutler.pojo.third.ThirdDRTransitInf" />
+		<typeAlias alias="ComboProjectIdName" type="com.bossbutler.pojo.third.ComboProjectIdName" />
+		<typeAlias alias="DeviceStatus" type="com.bossbutler.pojo.regional.DeviceStatus" />
+	</typeAliases>
+	<!-- 分页组件 -->
+	<plugins>
+		<plugin interceptor="com.bossbutler.db.page.MySqlPagingInterceptor">
+			<property name="pageSqlId" value=".*PageList.*" />
+		</plugin>
+	</plugins>
+</configuration>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>爱包办-会务空间</title>
+<link href="styles/swiper.min.css" rel="stylesheet" />
+<link href="styles/index.css" rel="stylesheet" />
+<meta
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+	name="viewport">
+<meta content="yes" name="apple-mobile-web-app-capable">
+<meta content="black" name="apple-mobile-web-app-status-bar-style">
+<meta name="format-detection" content="telephone=no">
+</head>
+
+<body style="">
+
+   <!--  <script type="text/javascript">
+        /* location.href = "http://ibaoban-bgkj.h5-legend.com/h5/ibaoban-hwkj.html"; */
+    </script> -->
+  
+<style type="text/css">
+    html,body{
+        position: relative;
+        height: 100%;
+    }
+    .swiper-container{
+        width: 100%;
+        height: 100%;
+    }
+    .swiper-slide{
+        text-align: center;
+        font-size: 10px;
+        background: #fff;
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
+        -webkit-justify-content: center;
+        justify-content: center;
+        -ms-flex-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+    }
+    .imagePosition img{
+        width: 30px;
+        height: 22px;
+    }
+    .image1{
+        position: absolute;
+        top: 83%;
+        left: 48%;
+    }
+    .image2{
+        position: absolute;
+        top: 84%;
+        left: 48%;
+    }
+
+        @-webkit-keyframes jump {
+            0% {top: 84%;
+                opacity: 1;
+                /*-webkit-animation-timing-function: ease-in;*/
+            }
+            50% {top: 86%;
+                /* opacity: 0; */
+                /*-webkit-animation-timing-function: ease-out;*/
+            }
+            100% {top: 84%;
+                opacity: 0;
+                /*-webkit-animation-timing-function: ease-in;*/
+            }
+        }
+
+        @-webkit-keyframes jump1 {
+            0% {top: 86%;
+                opacity: 1;
+                /*-webkit-animation-timing-function: ease-in;*/
+            }
+            50% {top: 88%;
+                /* opacity: 0; */
+                /*-webkit-animation-timing-function: ease-out;*/
+            }
+            100% {top: 86%;
+                opacity: 0;
+                /*-webkit-animation-timing-function: ease-in;*/
+            }
+        }
+
+        .image1 {
+            position: absolute;
+            top: 0; 
+            z-index: 11;
+            -webkit-animation: jump 1.5s infinite;
+            -moz-animation: jump 1.5s infinite;
+            -o-animation: jump 1.5s infinite;
+            -ms-animation: jump 1.5s infinite;
+            animation: jump 1.5s infinite;
+            animation-delay: 0.1s; 
+            animation-direction: normal;
+            cursor: pointer;
+        }
+
+        .image2 {
+            position: absolute;
+            top: 20px;  
+            z-index: 11;
+            -webkit-animation: jump1 1.5s infinite;
+            -moz-animation: jump1 1.5s infinite;
+            -o-animation: jump1 1.5s infinite;
+            -ms-animation: jump1 1.5s infinite;
+            animation: jump1 1.5s infinite;
+            animation-delay: 0.1s; 
+            animation-direction: normal;
+            cursor: pointer;
+        }
+@keyframes arrowGo {
+    0% {
+        opacity: 1;
+        transform:translate(20%,0)
+    }
+    100% {
+        opacity: 0.3;
+        transform:translate(20%,0) scale(0);
+        top: 500px;
+    }
+}
+</style>
+<body style="background-color: black">
+
+ <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide" id="img01" style="top:-60px;left:-1px"><img src="../resources/css/images/ibaoban/ibaoban1.jpg" width="100%" alt="">
+               <div class="imagePosition" style="z-index: 100;">
+                    <img class="image1" src="../resources/css/images/ibaoban/point1.jpg" alt="" >
+                    <img class="image2" src="../resources/css/images/ibaoban/point2.jpg" alt="">
+                </div>
+            </div>
+            <div class="swiper-slide" id="img02"><img src="../resources/css/images/ibaoban/ibaoban2.jpg" width="100%" alt="">
+                <div class="imagePosition" style="z-index: 100;">
+                    <img class="image1" src="../resources/css/images/ibaoban/point1.jpg" alt="">
+                    <img class="image2" src="../resources/css/images/ibaoban/point2.jpg" alt="">
+                </div>
+            </div>
+            <div class="swiper-slide" id="img03"><img src="../resources/css/images/ibaoban/ibaoban3.jpg" width="100%" alt="">
+                <div class="imagePosition" style="z-index: 100;">
+                    <img class="image1" src="../resources/css/images/ibaoban/point1.jpg" alt="">
+                    <img class="image2" src="../resources/css/images/ibaoban/point2.jpg" alt="">
+                </div>
+            </div>
+            <div class="swiper-slide" id="img04"><img src="../resources/css/images/ibaoban/ibaoban4.jpg" width="100%" alt="">
+            </div>
+        </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
+    </div>
+	
+
+
+	<script src="scripts/swiper.min.js"></script>
+	<script src="scripts/swiper.animate1.0.2.min.js"></script>
+	<script src="scripts/index.js"></script>
+	<script>
+	    var swiper = new Swiper(".swiper-container",{
+	        Pagination:'.swiper-pagination',
+	        paginationClickable:true,
+	        direction:'vertical'
+	    });
+	</script>
+
+</body>
+
+</html>

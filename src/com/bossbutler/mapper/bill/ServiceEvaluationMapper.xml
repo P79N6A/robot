@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.bill.ServiceEvaluationMapper" >
+  <resultMap id="BaseResultMap" type="com.bossbutler.pojo.bill.ServiceEvaluation" >
+    <id column="evaluation_id" property="evaluationId" jdbcType="BIGINT" />
+    <result column="bill_id" property="billId" jdbcType="BIGINT" />
+    <result column="account_id" property="accountId" jdbcType="BIGINT" />
+    <result column="skills" property="skills" jdbcType="TINYINT" />
+    <result column="attitude" property="attitude" jdbcType="TINYINT" />
+    <result column="image" property="image" jdbcType="TINYINT" />
+    <result column="efficient" property="efficient" jdbcType="TINYINT" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="status_code" property="statusCode" jdbcType="CHAR" />
+    <result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    evaluation_id, bill_id, account_id, skills, attitude, image, efficient, remark, status_code, 
+    status_time, create_time, update_time, operator_id, data_version
+  </sql>
+  <select id="findByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+  	select 
+  	<include refid="Base_Column_List"></include>
+  	from service_evaluation t
+  	where t.bill_id = #{billId}
+  </select>
+  <insert id="insert" parameterType="com.bossbutler.mapper.bill.ServiceEvaluationMapper" >
+    insert into service_evaluation
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="evaluationId != null" >
+        evaluation_id,
+      </if>
+      <if test="billId != null" >
+        bill_id,
+      </if>
+      <if test="accountId != null" >
+        account_id,
+      </if>
+      <if test="skills != null" >
+        skills,
+      </if>
+      <if test="attitude != null" >
+        attitude,
+      </if>
+      <if test="image != null" >
+        image,
+      </if>
+      <if test="efficient != null" >
+        efficient,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+      <if test="statusCode != null" >
+        status_code,
+      </if>
+      <if test="statusTime != null" >
+        status_time,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="operatorId != null" >
+        operator_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="evaluationId != null" >
+        #{evaluationId,jdbcType=BIGINT},
+      </if>
+      <if test="billId != null" >
+        #{billId,jdbcType=BIGINT},
+      </if>
+      <if test="accountId != null" >
+        #{accountId,jdbcType=BIGINT},
+      </if>
+      <if test="skills != null" >
+        #{skills,jdbcType=TINYINT},
+      </if>
+      <if test="attitude != null" >
+        #{attitude,jdbcType=TINYINT},
+      </if>
+      <if test="image != null" >
+        #{image,jdbcType=TINYINT},
+      </if>
+      <if test="efficient != null" >
+        #{efficient,jdbcType=TINYINT},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="statusCode != null" >
+        #{statusCode,jdbcType=CHAR},
+      </if>
+      <if test="statusTime != null" >
+        #{statusTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="operatorId != null" >
+        #{operatorId,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="update" parameterType="com.bossbutler.mapper.bill.ServiceEvaluationMapper" >
+    update service_evaluation
+    <set >
+      <if test="billId != null" >
+        bill_id = #{billId,jdbcType=BIGINT},
+      </if>
+      <if test="accountId != null" >
+        account_id = #{accountId,jdbcType=BIGINT},
+      </if>
+      <if test="skills != null" >
+        skills = #{skills,jdbcType=TINYINT},
+      </if>
+      <if test="attitude != null" >
+        attitude = #{attitude,jdbcType=TINYINT},
+      </if>
+      <if test="image != null" >
+        image = #{image,jdbcType=TINYINT},
+      </if>
+      <if test="efficient != null" >
+        efficient = #{efficient,jdbcType=TINYINT},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="statusCode != null" >
+        status_code = #{statusCode,jdbcType=CHAR},
+      </if>
+      <if test="statusTime != null" >
+        status_time = #{statusTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="operatorId != null" >
+        operator_id = #{operatorId,jdbcType=BIGINT},
+      </if>
+      where evaluation_id =#{evaluationId}
+    </set>
+  </update>
+</mapper>

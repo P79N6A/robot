@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.myregional.MyRegionalMapper">
+	<resultMap id="resourceM" type="com.bossbutler.pojo.resource.ResourceModel">
+		<result property="relationId" column="relation_id"/>
+		<result property="resourceId" column="resource_id" />
+		<result property="resourceName" column="resource_name" />
+		<result property="arrangeId" column="arrange_id"/>
+		<result property="projectId" column="project_id" />
+		<result property="resourceCode" column="resource_code" />
+		<result property="resourceType" column="resource_type" />
+		<result property="buildingArrange" column="building_arrange" />
+		<result property="buildingName" column="buildingName" />
+		<result property="floorArrange" column="floor_arrange" />
+		<result property="floorName" column="floorName" />
+		<result property="roomArrange" column="room_arrange" />
+		<result property="roomArrangeName" column="roomArrangeName" />
+		<result property="roomName" column="room_name" />
+		<result property="rentType" column="rent_type" />
+		<result property="quantity" column="quantity" />
+		<result property="floorage" column="floorage" />
+		<result property="available" column="available" />
+		<result property="statusCode" column="status_code" />
+		<result property="statusTime" column="status_time" />
+		<result property="createTime" column="create_time" />
+		<result property="updateTime" column="update_time" />
+		<result property="operatorId" column="operator_id" />
+		<result property="beginDate" column="begin_date"/>
+		<result property="endDate" column="end_date"/>
+	</resultMap>
+	<resultMap id="arrangeM" type="com.bossbutler.mapper.myregional.Arrange">
+		<id column="arrange_id" property="arrangeId" />
+		<result column="project_id" property="projectId" />
+		<result column="arrange_code" property="arrangeCode" />
+		<result column="arrange_name" property="arrangeName" />
+		<result column="supper_id" property="supperId" />
+		<result column="controller_id" property="controllerId" />
+		<result column="status_code" property="statusCode" />
+		<result column="status_time" property="statusTime" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+		<result column="operator_id" property="operatorId" />
+		<result column="data_version" property="dataVersion" />
+		<result column="entrance_type" property="entrance_type" />
+	</resultMap>
+	<select id="querymyregional" parameterType="String" resultType="regional">
+		select a.regional_id as regionalId,a.regional_name as regionalName
+		from regional
+		a join regional_emp_relation b on
+		a.regional_id=b.regional_id
+		join emp c on b.emp_id=c.emp_id
+		join account d on c.account_id=d.account_id where
+		d.account_id=#{accountId}
+	</select>
+	
+	<select id="queryRegional" resultType="com.bossbutler.pojo.RegionalPojo">
+		select 
+			a.regional_id as regionalId,
+			a.regional_name as regionalName
+		from 
+			regional a
+		<if test="model.projectId !=null and model.projectId !=''">
+			join project b
+				on a.org_id=b.admin_org
+		</if>
+		<where>
+			<if test="model.projectId !=null and model.projectId !=''">
+				b.project_id=#{model.projectId}
+			</if>
+			<if test="model.regionalTypes !=null and model.regionalTypes !=''">
+				and a.regional_Type in (${model.regionalTypes})
+			</if>
+			<if test="model.statusCode !=null and model.statusCode !=''">
+				and a.status_code=#{model.statusCode}
+			</if>
+			or 1!=1 
+		</where>
+		LIMIT 1
+			
+	</select>
+	<select id="querymyarrange" parameterType="String" resultType="arrange">
+		select 
+		    DISTINCT
+			a.arrange_id as arrangeId,
+			a.arrange_name as arrangeName,
+			a.entry_root as entryRoot
+		from
+			arrange a 
+		left join
+			regional_arrange_relation b 
+				on a.arrange_id=b.arrange_id
+		<where>
+			<if test="regionalId !=null and regionalId !=''">
+				 b.regional_id  in (${regionalId})
+			</if>
+			<if test="arrangeType !=null and arrangeType !=''">
+				and a.arrange_type=#{arrangeType}
+			</if>
+		</where>
+		order by arrange_code
+	</select>
+	<select id="querymydevice" parameterType="String" resultType="device">
+		select 
+			a.device_id as deviceId,
+			a.device_name as deviceName,
+			a.device_code deviceCode,
+			a.device_type deviceType
+		from 
+			device a 
+		join arrange_device b on a.device_id=b.device_id 
+		join arrange c on b.arrange_id=c.arrange_id 
+		where c.arrange_id=#{arrangeId}
+	</select>
+	<select id="querymydeviceDEX" parameterType="String" resultType="device">
+		select 
+			a.device_id as deviceId,
+			a.device_name as deviceName,
+			a.device_code deviceCode,
+			a.device_type deviceType
+		from 
+			device a 
+		join controller d
+			on a.controller_id=d.controller_id
+		join arrange_device b 
+			on a.device_id=b.device_id 
+		join arrange c 
+			on b.arrange_id=c.arrange_id 
+		where 
+			c.arrange_id=#{arrangeId}
+			and d.controller_type='01'
+	</select>
+	<select id="queryArrangeFirst" parameterType="String" resultType="arrange">
+		select distinct a.arrange_id arrangeId ,a.arrange_name arrangeName from  arrange a 
+		left join regional_arrange_relation rar on a.arrange_id = rar.arrange_id
+		left join regional_emp_relation rer on rar.regional_id = rer.regional_id
+		where rer.emp_id in (select emp_id from emp e where e.account_id = #{accountId})
+		and a.arrange_type = '02'
+	</select>
+	<select id="queryArrangeFirstNew" parameterType="String" resultType="arrange">
+		select distinct a.arrange_id arrangeId ,a.arrange_name arrangeName ,p.project_name projectName from  arrange a 
+		left join regional_arrange_relation rar on a.arrange_id = rar.arrange_id
+		left join regional_emp_relation rer on rar.regional_id = rer.regional_id
+		left join emp_project_relation epr on epr.emp_id = rer.emp_id
+		left join project p on p.project_id = epr.project_id
+		where rer.emp_id in (select emp_id from emp e where e.account_id = #{accountId})
+		and a.arrange_type = '02'
+	</select>
+	
+	<select id="getTerminalRegionalByTerId" resultType="com.bossbutler.pojo.regional.RegionalModel">
+		SELECT r.* from regional r 
+		LEFT JOIN terminal t on r.terminal_id=t.terminal_id
+		where t.mac_address=#{mackAddress}
+		<if test="statusCode != null and statusCode != ''">
+			and r.status_code=#{statusCode}
+		</if>
+	</select>
+	<update id="setRegionalStatusCode">
+		update regional set  status_code=#{statusCode},operator_id=#{operatorId} where regional_id=#{regionalid}
+	</update>
+	<update id="setRegionalNameById">
+		update regional set  regional_name=#{regional_name},operator_id=#{operatorId} where regional_id=#{regionalid}
+	</update>
+
+	<select id="getTransitByDeviceAccId" resultType="com.bossbutler.pojo.regional.TransitModel">
+		SELECT tlr.* from transit_list_result_biz tlr 
+		where 
+		1!=1 
+		<if test="transitType !=null and transitType !='' ">
+			or tlr.transit_type=#{transitType}
+		</if>
+		<if test="accounts!=null">
+				 and account_code in 
+				 <foreach collection="accounts" item="item" open="(" separator="," close=")">
+					#{item.accountCode}
+				</foreach>
+		</if>
+		 and device_code in
+		<foreach collection="divices" item="item" open="(" separator="," close=")">
+			#{item.deviceCode}
+		</foreach>
+	</select>
+	
+	
+	<select id="queryTransitByTransitCode" resultType="com.bossbutler.pojo.regional.TransitModel">
+		SELECT tlr.* from transit_list_result_biz tlr 
+		where tlr.transit_type='01'
+		and tlr.transit_code =#{transitCode} and tlr.project_id =#{projectId}
+	</select>
+	<select id="queryTransitByTyAcTcPi" resultType="com.bossbutler.pojo.regional.TransitModel">
+		SELECT tlr.* from transit_list_result_biz tlr 
+		<where>
+			<if test="transitType!=null and transitType != ''">
+				and tlr.transit_type = #{transitType}
+			</if>
+			<if test="accountCode!=null and accountCode != ''">
+				and tlr.account_code = #{accountCode}
+			</if>
+			<if test="transitCode!=null and transitCode != ''">
+				and tlr.transit_code =#{transitCode}
+			</if>
+			<if test="projectId!=null and projectId != ''">
+				and tlr.project_id =#{projectId}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryTransitListByTyAcTcPi" resultType="com.bossbutler.pojo.regional.TransitModel">
+		SELECT tlr.* from transit_list tlr 
+		<where>
+			<if test="accountCode!=null and accountCode != ''">
+				and tlr.account_code = #{accountCode}
+			</if>
+			<if test="transitType!=null and transitType != ''">
+				and tlr.transit_type =#{transitType}
+			</if>
+			<if test="projectId!=null and projectId != ''">
+				and tlr.project_id =#{projectId}
+			</if>
+			<if test="transitCode!=null and transitCode != ''">
+				and tlr.transit_code =#{transitCode}
+			</if>
+		</where>
+		union all
+		SELECT tlrv.* from transit_list_invalid tlrv 
+		<where>
+			<if test="accountCode!=null and accountCode != ''">
+				and tlrv.account_code = #{accountCode}
+			</if>
+			<if test="transitType!=null and transitType != ''">
+				and tlrv.transit_type =#{transitType}
+			</if>
+			<if test="projectId!=null and projectId != ''">
+				and tlrv.project_id =#{projectId}
+			</if>
+			<if test="transitCode!=null and transitCode != ''">
+				and tlrv.transit_code =#{transitCode}
+			</if>
+		</where>
+	</select>
+	<delete id="deleteRegionalArrangeRelationById">
+		delete from regional_arrange_relation where regional_id = #{regionalId}	
+	</delete>
+	<delete id="deleteById">
+		delete from regional where regional_id = #{regionalId}	
+	</delete>
+	<select id="getAccontByEmpId2" resultType="com.bossbutler.pojo.system.Account">
+		select DISTINCT e.emp_name,a.account_id
+		accountId,a.account_code accountCode,a.login_id,
+		a.login_name,a.mobilephone,a.email,
+		a.status_code,act.transit_code,
+		act.transit_type,min(orr.begin_date) begin_date ,max(orr.end_date) end_date
+		from account a
+		LEFT JOIN account_transit act on a.account_id=act.account_id 
+		left join emp e on e.account_id=a.account_id 
+		LEFT JOIN org_resource_relation orr on orr.org_id=e.org_id
+		where  e.status_code='01' and e.emp_id in
+		<foreach collection="list" item="item" open="(" separator=","
+			close=")">
+			#{item.emp_id}
+		</foreach>
+		and orr.begin_date is not null 
+		GROUP BY act.transit_code
+	</select>
+	<select id="getTransitByDeviceAccId2" resultType="com.bossbutler.pojo.regional.TransitModel">
+		SELECT tlr.* from transit_list tlr 
+		where tlr.project_id=#{projectId}
+		<if test="accounts!=null">
+				 and tlr.account_code=#{accounts.accountCode}
+		</if>
+		 and tlr.device_code in
+		<foreach collection="divices" item="item" open="(" separator="," close=")">
+			#{item.deviceCode}
+		</foreach>
+		 and tlr.status_code='03'
+		UNION
+		SELECT tli.* from transit_list_invalid tli
+		where tli.project_id=#{projectId}
+		<if test="accounts!=null">
+				 and tli.account_code=#{accounts.accountCode}
+		</if>
+		 and tli.device_code in
+		<foreach collection="divices" item="item" open="(" separator="," close=")">
+			#{item.deviceCode}
+		</foreach>
+		and tli.status_code='03';
+	</select>
+	<select id="getTransitListByDeviceAccId2" resultType="com.bossbutler.pojo.regional.TransitModel">
+		SELECT tlr.* from transit_list tlr 
+		where tlr.project_id=#{projectId}
+		<if test="accounts!=null">
+				 and account_code=#{accounts.accountCode}
+		</if>
+		 and device_code in
+		<foreach collection="divices" item="item" open="(" separator="," close=")">
+			#{item.deviceCode}
+		</foreach>
+		and status_code<![CDATA[<>]]>'01' and status_code<![CDATA[<>]]>'03'
+	</select>
+	<select id="getDevicebyProjectId" resultType="com.bossbutler.pojo.regional.Device">
+		SELECT DISTINCT d.device_id deviceId,d.serial_number
+		serialNumber,d.controller_id controllerId,d.device_code
+		deviceCode,d.device_name deviceName,
+		d.device_type
+		deviceType,d.device_remark deviceRemark from device d 
+		LEFT JOIN arrange_device ad on d.device_id=ad.device_id
+		LEFT JOIN arrange a on a.arrange_id = ad.arrange_id
+		where a.project_id=#{project.projectId} and  (a.entrance_type='04' or a.entrance_type='01');
+	</select>
+	<insert id="createTransitList" parameterType="java.util.List">
+		INSERT INTO transit_list (
+		list_id,
+		account_code,
+		project_id,
+		device_code,
+		transit_code,
+		transit_type,
+		begin_date,
+		end_date,
+		begin_time,
+		end_time,
+		limit_count,
+		project_name,
+		org_name,
+		emp_name,
+		status_code,
+		status_time,
+		operator_id,
+		synch_state
+		)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(#{item.list_id},
+			#{item.account_code},
+			#{item.project_id},
+			#{item.device_code},
+			#{item.transit_code},
+			#{item.transit_type},
+			#{item.begin_date},
+			#{item.end_date},
+			#{item.begin_time},
+			#{item.end_time},
+			#{item.limit_count},
+			#{item.projectName},
+			#{item.org_name},
+			#{item.emp_name},
+			#{item.status_code},
+			#{item.status_time},
+			#{item.operator_id},
+			#{item.synch_state})
+		</foreach>
+	</insert>
+	<select id="getOrgResourceByOrgId" resultMap="resourceM">
+		SELECT 
+			 a.relation_id,
+			 a.begin_date,
+			 a.end_date,
+			 b.*,
+			 c.arrange_id
+		from org_resource_relation a
+		left join resource b
+			on a.resource_id=b.resource_id
+		left join arrange_resource c
+			on b.resource_id=c.resource_id
+		where a.org_id=#{orgId} and a.begin_date is not null
+	</select>
+	
+	
+	<select id="getResourceByOrgId" resultMap="resourceM">
+		SELECT 
+		     a.resource_id,
+			 b.resource_name
+		from org_resource_relation a
+		left join resource b
+			on a.resource_id=b.resource_id
+		where a.org_id=#{orgId} 
+	</select>
+	<select id="getParentArrange" resultType="com.bossbutler.pojo.regional.ArrangeModel" parameterType="java.lang.String">
+		select getSupperLst2(#{superIds}) as status_code;  
+	</select>
+	<select id="getArrangeByArrIdPrId" resultMap="arrangeM">
+		  SELECT * from arrange where arrange_id in (${status_code}) and project_id=#{projectId} and (entrance_type='01' or entrance_type='04')
+	</select>
+	<select id="getPublicDevicebyProjectId" resultType="com.bossbutler.pojo.regional.Device">
+		SELECT DISTINCT d.device_id deviceId,d.serial_number
+		serialNumber,d.controller_id controllerId,d.device_code
+		deviceCode,d.device_name deviceName,
+		d.device_type
+		deviceType,d.device_remark deviceRemark from device d 
+		LEFT JOIN arrange_device ad on d.device_id=ad.device_id
+		LEFT JOIN arrange a on a.arrange_id = ad.arrange_id
+		where a.project_id=#{project.projectId} and  a.entrance_type='04'
+	</select>
+		<select id="getDeviceByArrangeIds" resultType="com.bossbutler.pojo.regional.Device">
+		SELECT DISTINCT d.device_id deviceId,d.device_code deviceCode,d.device_type deviceType from arrange_device ad 
+		LEFT JOIN device d on d.device_id=ad.device_id
+		where ad.arrange_id in  
+		<foreach collection="list" item="item" open="(" separator=","
+			close=")">
+			#{item.arrange_id}
+		</foreach>
+	</select>
+		<select id="getOrgResourceByOrgIdPageList" resultMap="resourceM">
+		SELECT 
+			 a.relation_id,
+			 a.begin_date,
+			 a.end_date,
+			 b.*,
+			 c.arrange_id
+		from org_resource_relation a
+		left join resource b
+			on a.resource_id=b.resource_id
+		left join arrange_resource c
+			on b.resource_id=c.resource_id
+		where a.org_id=#{orgId} 
+		<if test="resourceType !=null and resourceType !=''">
+				and a.resource_type=#{resourceType}
+		</if>
+	</select>
+	
+	 <select id="getArrangebyDeviceId" resultType="com.bossbutler.mapper.myregional.Arrange">
+		SELECT
+			a.arrange_id as arrangeId,
+			b.entrance_type,
+			b.arrange_name as arrangeName
+		FROM
+			arrange_device a
+		LEFT JOIN arrange b ON a.arrange_id =b.arrange_id
+		WHERE
+			a.device_id =#{deviceId}
+	</select>
+</mapper>

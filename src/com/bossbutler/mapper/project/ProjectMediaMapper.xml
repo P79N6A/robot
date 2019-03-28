@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.project.ProjectMediaMapper">
+	<resultMap id="projectMediaM" type="com.bossbutler.pojo.project.ProjectMedia">
+		<result property="projectId" column="project_id" />
+		<result property="mediaId" column="media_id" />
+		<result property="ordinal" column="ordinal" />
+		<result property="mainClassify" column="main_classify" />
+		<result property="mediaType" column="media_type" />
+		<result property="fileType" column="file_type" />
+		<result property="mediaNo" column="media_no" />
+		<result property="createTime" column="create_time" />
+		<result property="updateTime" column="update_time" />
+		<result property="operatorId" column="operator_id" />
+		<result property="dataVersion" column="data_version" />
+
+	</resultMap>
+
+	<insert id="addProjectMedia" parameterType="hashmap">
+		insert into
+		project_media(media_id,project_id,ordinal,main_classify,media_type,file_type,media_no,create_time,update_time,operator_id,data_version)
+		values(#{media_id},#{project_id},#{ordinal},#{main_classify},#{media_type},#{file_type},#{media_no},#{create_time},#{update_time},#{operator_id},#{data_version})
+	</insert>
+	<delete id="deleteProjectMediaById" parameterType="String">
+		delete from Project_media where media_id=#{media_id}
+	</delete>
+	
+	<delete id="deleteByProjectId"  parameterType="long">
+	   delete from Project_media where project_id=#{projectId}
+	</delete>
+	<select id="getMediaByProId" parameterType="hashmap" resultMap="projectMediaM">
+		select
+		media_id,project_id,ordinal,main_classify,media_type,file_type,media_no,create_time
+		from project_media where project_id=#{project_id} and
+		media_type=#{media_type} and main_classify=#{main_classify}
+	</select>
+	<select id="getMediaById" parameterType="String" resultMap="projectMediaM">
+		select
+		media_id,project_id,ordinal,main_classify,media_type,file_type,media_no,create_time,update_time,operator_id,data_version
+		from project_media where media_id=#{media_id}
+	</select>
+	<insert id="insert" parameterType="com.bossbutler.pojo.project.ProjectMedia">
+		insert intprojectnt_media
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="mediaId != null">
+				media_id,
+			</if>
+			<if test="projectId != null">
+				project_id,
+			</if>
+			<if test="ordinal != null">
+				ordinal,
+			</if>
+			<if test="mainClassify != null">
+				main_classify,
+			</if>
+			<if test="mediaType != null">
+				media_type,
+			</if>
+			<if test="fileType != null">
+				file_type,
+			</if>
+			<if test="mediaNo != null">
+				media_no,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="operatorId != null">
+				operator_id,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+
+			<if test="mediaId != null">
+				#{mediaId},
+			</if>
+			<if test="projectId != null">
+				#{projectId},
+			</if>
+			<if test="ordinal != null">
+				#{ordinal},
+			</if>
+			<if test="mainClassify != null">
+				#{mainClassify},
+			</if>
+			<if test="mediaType != null">
+				#{mediaType},
+			</if>
+			<if test="fileType != null">
+				#{fileType},
+			</if>
+			<if test="mediaNo != null">
+				#{mediaNo},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime},
+			</if>
+			<if test="operatorId != null">
+				#{operatorId},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="updateDynamic">
+		UPDATE project_media
+		<trim prefix="set" suffixOverrides=",">
+			<if test="projectId!=null">
+				project_id = #{projectId} ,
+			</if>
+			<if test="ordinal!=null">
+				ordinal = #{ordinal} ,
+			</if>
+			<if test="mainClassify!=null">
+				main_classify = #{mainClassify} ,
+			</if>
+			<if test="mediaType!=null">
+				media_type = #{mediaType} ,
+			</if>
+			<if test="fileType!=null">
+				file_type = #{fileType} ,
+			</if>
+			<if test="mediaNo!=null">
+				media_no = #{mediaNo} ,
+			</if>
+			<if test="createTime!=null">
+				create_time = #{createTime} ,
+			</if>
+			<if test="updateTime!=null">
+				update_time = #{updateTime} ,
+			</if>
+			<if test="operatorId!=null">
+				operator_id = #{operatorId} ,
+			</if>
+		</trim>
+		<where>
+			media_id = #{mediaId}
+		</where>
+	</update>
+</mapper>

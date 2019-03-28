@@ -1,0 +1,748 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.chart.ChartMapperM">
+
+	<resultMap type="com.bossbutler.mapper.chart.MyChartOrg" id="orgM">
+		<result property="projectName" column="project_name"></result>
+		<result property="projectId" column="project_id"></result>
+		<result property="orgId" column="org_id"></result>
+	</resultMap>
+
+	<resultMap type="com.bossbutler.pojo.chart.RptFeeModel" id="feeM">
+		<result property="charge_id" column="charge_id"></result>
+		<result property="org_id" column="org_id"></result>
+		<result property="charge_type" column="charge_type"></result>
+		<result property="charge_code" column="charge_code"></result>
+		<result property="charge_name" column="charge_name"></result>
+		<result property="super_id" column="super_id"></result>
+	</resultMap>
+
+
+	<select id="queryOrgs" parameterType="String" resultMap="orgM">
+		SELECT
+		<if test="type == 01">
+		 org.org_id,project.project_name,project.project_id
+		 </if>
+		   <if test="type == 02">
+		DISTINCT project.project_name,project.project_id
+		</if>
+		
+		from project
+		INNER JOIN emp_project_relation on
+		project.project_id=emp_project_relation.project_id
+		INNER JOIN emp on
+		emp.emp_id = emp_project_relation.emp_id
+		INNER JOIN org ON org.org_id =
+		emp.org_id
+		INNER JOIN account ON account.account_id = emp.account_id
+		where 
+		account.account_id = #{accountId}
+		<if test="type == 01">
+		and org.duty_type='0302' and
+		emp.roles <![CDATA[&]]>
+		128 <![CDATA[>]]>0
+		</if> 
+		
+		<if test="type == 02">
+		and org.duty_type='0301'
+		<!--and project.admin_org <![CDATA[<>]]> org.org_id  -->
+		</if>
+		ORDER BY project.project_id
+	</select>
+	
+	<select id="queryCustomerCurrentSum" resultType="String">
+	SELECT
+	COALESCE(param_value,0) ,param_code
+	FROM
+	rpt_customer_current
+	WHERE
+	param_code = #{code}
+	AND project_id =
+		#{project_id}
+	</select>
+
+	<select id="queryCustomerReportSum" resultType="String">
+		SELECT COALESCE (SUM(report_data),0.0) from rpt_customer_report
+		where
+		report_code =
+		#{code}
+		AND project_id =
+		#{project_id}
+		<if test="type == 0">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+		<if test="type == 1">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+		</if>
+
+		<if test="type == 2">
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+		<if test="type == 3">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+			and period_begin<![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+		<if test="type == 4">
+			and period_end <![CDATA[>=]]>
+			#{period_begin}
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+	</select>
+
+
+	<select id="queryContractReportSum" resultType="String">
+		SELECT COALESCE(SUM(report_data),0.0) from rpt_contract_report
+		where
+		report_code =
+		#{code}
+		and project_id = #{project_id}
+		<if test="type == 0">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+		<if test="type == 1">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+		</if>
+
+		<if test="type == 2">
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+		<if test="type == 3">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+			and period_begin<![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+		<if test="type == 4">
+			and period_end <![CDATA[>=]]>
+			#{period_begin}
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+
+	</select>
+
+	<select id="queryChargeReportSum" resultType="String">
+		SELECT COALESCE(SUM(report_data),0.0) from rpt_charge_report
+		where
+		report_code =
+		#{code}
+		and project_id = #{project_id}
+		<if test="type == 0">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 1">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+		</if>
+		<if test="type == 2">
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 3">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+			and period_begin<![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 4">
+			and period_end <![CDATA[>=]]>
+			#{period_begin}
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+	</select>
+
+	<!-- queryChargeReportProcess -->
+	<select id="queryChargeReportProcess" resultType="String">
+		SELECT COALESCE(sum(param_value),0.0) from rpt_charge_process rcp
+		join
+		charge c on
+		rcp.charge_id = c.charge_id
+		where param_code = #{param_code}
+		and
+		project_id = #{project_id}
+		and supper_id is not null
+		AND c.charge_type = #{charge_type}
+
+			 <if test="isOther == 1">
+				AND c.charge_id <![CDATA[<>]]>
+				#{charge_id}
+			</if> 
+	
+
+		<if test="type == 0">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+			and perform_time <![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 1">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+		</if>
+		<if test="type == 2">
+			and perform_time <![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 3">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+			and perform_time<![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 4">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+			and perform_time <![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+	</select>
+
+	<select id="queryserviceCurrent" resultType="String">
+		SELECT
+		COALESCE(param_value,0.0)
+		FROM
+		rpt_service_current
+		WHERE
+		param_code =
+		#{code}
+		AND project_id =
+		#{project_id}
+	</select>
+
+	<select id="queryProjectCurrent" resultType="String">
+		SELECT
+		COALESCE(param_value,0.0)
+		FROM
+		rpt_project_current
+		WHERE
+		param_code = #{code}
+		AND project_id =
+		#{project_id}
+	</select>
+	
+	<select id="queryOtherSumFees" resultMap="feeM">
+	SELECT c.charge_name ,COALESCE(sum(param_value),0.0) charge_code from rpt_charge_process rcp
+		join
+		charge c on
+		rcp.charge_id = c.charge_id
+		where param_code = #{param_code}
+		and
+		project_id = #{project_id}
+		and supper_id is not null
+		AND c.charge_type = #{charge_type}
+
+			 <if test="isOther == 1">
+				AND c.charge_id <![CDATA[<>]]>
+				#{charge_id}
+			</if> 
+	
+
+		<if test="type == 0">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+			and perform_time <![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 1">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+		</if>
+		<if test="type == 2">
+			and perform_time <![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 3">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+			and perform_time<![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 4">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+			and perform_time <![CDATA[<=]]>
+			#{period_end}
+		</if>
+		group by c.charge_id
+	</select>
+
+	<select id="queryOtherFees" resultMap="feeM">
+		SELECT charge_id,org_id,charge_type,charge_code,charge_name,supper_id
+		from
+		charge
+		where charge_id <![CDATA[<>]]>
+		#{charge_id}
+		and charge_type = #{charge_type}
+			and supper_id is not null
+	</select>
+
+	<!--queryOtherChargeSum -->
+	<select id="queryOtherChargeSum" resultType="String">
+		SELECT COALESCE(sum(param_value),0.0) FROM rpt_charge_process rcp
+		where param_code = #{param_code}
+		and project_id = #{project_id}
+		and
+		rcp.charge_id = #{charge_id}
+		<if test="type == 0">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+			and perform_time <![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 1">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+		</if>
+		<if test="type == 2">
+			and perform_time <![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 3">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+			and perform_time<![CDATA[<=]]>
+			#{period_end}
+		</if>
+		<if test="type == 4">
+			and perform_time <![CDATA[>=]]>
+			#{period_begin}
+			and perform_time <![CDATA[<=]]>
+			#{period_end}
+		</if>
+	</select>
+	<!-- queryContractReportRentFee -->
+	<select id="queryContractReportRentFee" resultType="String">
+	SELECT round(
+		t1.report_data / t2.report_data , 1
+	) AS param_value FROM
+	(
+		SELECT 
+		COALESCE(SUM(report_data),0.0) as report_data
+		FROM rpt_contract_report
+		WHERE report_code = #{code_fee}
+		AND project_id = #{project_id}
+		AND DATE_FORMAT(period_begin , '%Y%m') = #{date}
+	) t1 ,
+	(
+		SELECT 
+		COALESCE(SUM(report_data),0.0) as report_data
+		FROM rpt_contract_report
+		WHERE report_code = #{code_num}
+		AND project_id = #{project_id}
+		AND DATE_FORMAT(period_begin , '%Y%m') = #{date}
+	) t2
+	</select>
+	<!--  queryContractCurrent-->
+	<select id="queryContractCurrent" resultType="String">
+		SELECT
+		COALESCE(SUM(param_value) , 0.0)
+		FROM
+		rpt_contract_current
+		WHERE
+		param_code = #{code}
+		and project_id = #{project_id}
+
+	</select>
+	<select id="queryContractCurrent_deprecated" resultType="String">
+		<!-- SELECT param_value from rpt_contract_current
+	 	where param_code =#{code}
+	 	and project_id = #{project_id} -->
+	 	SELECT COALESCE(SUM(param_value),0.0) from rpt_contract_current
+		where
+		param_code =
+		#{code}
+		and project_id = #{project_id}
+		<if test="type == 0">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+		<if test="type == 1">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+		</if>
+
+		<if test="type == 2">
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+		<if test="type == 3">
+			and period_begin <![CDATA[>=]]>
+			#{period_begin}
+			and period_begin<![CDATA[<=]]>
+			#{period_end}
+		</if>
+
+		<if test="type == 4">
+			and period_end <![CDATA[>=]]>
+			#{period_begin}
+			and period_end <![CDATA[<=]]>
+			#{period_end}
+		</if>
+	 	
+	</select>
+	
+	<!-- queryContractCurrentRentFee -->
+	<select id="queryContractCurrentRentFee" resultType="String">
+		SELECT
+		round(
+		sum(t1.sum_value) / sum(t2.sum_value) ,
+		1
+		) AS param_value
+		FROM
+		(
+		SELECT sum(param_value) sum_value
+		FROM rpt_contract_current
+		WHERE param_code =#{code_fee}
+		AND project_id = #{project_id}
+		AND DATE_FORMAT(update_time ,
+		'%Y%m') =#{date}
+		) t1 ,
+		(
+		SELECT sum(param_value)
+		sum_value
+		FROM rpt_contract_current
+		WHERE param_code = #{code_num}
+		AND
+		project_id = #{project_id}
+		AND DATE_FORMAT(update_time , '%Y%m') = #{date}
+		) t2
+	</select>
+	
+	<select id="queryAllResourceArea" resultType="String">
+		SELECT
+			IFNULL(sum(floorage), 0)
+		FROM
+			resource
+		WHERE
+			project_id =#{projectId}
+	</select>
+
+
+	<select id="queryLeaseholdArea" resultType="String">
+	
+		SELECT
+			IFNULL(sum(floorage),0)
+		FROM
+			(SELECT DISTINCT
+				d.resource_id,
+				e.floorage
+			FROM
+				contract a
+			LEFT JOIN resource_storage d ON a.contract_id = d.contract_id
+			LEFT JOIN resource e ON d.resource_id = e.resource_id
+		
+			WHERE
+		<![CDATA[a.rent_begin <=#{date}
+				AND a.rent_end >=#{date}]]>
+				AND e.project_id =#{projectId}
+				and a.status_code='04'
+				<if test="contractType !=null and contractType!='' ">
+					and a.contract_type=#{contractType}
+				</if>
+			)a
+	
+	</select>
+
+	<select id="queryExpiryContract" resultType="String">
+		SELECT
+			count(*)
+		FROM
+			contract a
+		<!-- LEFT JOIN customer b 
+			ON a.customer_id = b.customer_id -->
+		LEFT JOIN org_project_relation c 
+			ON a.org_id = c.org_id
+		WHERE
+			c.project_id = #{projectId}
+		AND a.status_code ='04'
+		<if test="type =='01' ">
+			AND DATE_FORMAT(a.rent_end, "%Y")=#{date}
+		</if>
+		<if test="type =='02' ">
+			AND DATE_FORMAT(a.rent_end, "%Y-%m")=#{date}
+		</if>
+		<if test="type =='03' ">
+			AND DATE_FORMAT(a.rent_end, "%Y-%m-%d")=#{date}
+		</if>
+		<if test="contractType !=null and contractType!='' ">
+			and a.contract_type=#{contractType}
+		</if>
+		
+	</select>
+	
+	<select id="querySignContract" resultType="String">
+		SELECT
+			count(*)
+		FROM
+			contract a
+		<!-- LEFT JOIN customer b 
+			ON a.customer_id = b.customer_id -->
+		LEFT JOIN org_project_relation c 
+			ON a.org_id = c.org_id
+		WHERE
+			c.project_id = #{projectId}
+		AND a.status_code ='04'
+		<if test="type =='01' ">
+			AND DATE_FORMAT(a.endorse_date, "%Y")=#{date}
+		</if>
+		<if test="type =='02' ">
+			AND DATE_FORMAT(a.endorse_date, "%Y-%m")=#{date}
+		</if>
+		<if test="type =='03' ">
+			AND DATE_FORMAT(a.endorse_date, "%Y-%m-%d")=#{date}
+		</if>
+		<if test="contractType !=null and contractType!='' ">
+			and a.contract_type=#{contractType}
+		</if>
+		
+	</select>
+	
+	<select id="queryTenantTotal" resultType="String">
+		SELECT
+			count(DISTINCT a.customer_id)
+		FROM
+			customer a
+		LEFT JOIN contract b 
+			ON a.customer_id = b.customer_id
+		LEFT JOIN org_project_relation c 
+			ON a.org_id = c.org_id
+		WHERE
+			c.project_id =#{projectId}
+	<![CDATA[and b.endorse_date <=#{date}]]>
+			AND b.rent_end >=#{date}
+			AND b.status_code = '04'
+		<if test="contractType !=null and contractType!='' ">
+			and b.contract_type=#{contractType}
+		</if>
+	</select>
+	
+	<select id="queryInTenantTotal" resultType="String">
+		SELECT
+			count(DISTINCT a.customer_id)
+		FROM
+			customer a
+		LEFT JOIN contract b 
+			ON a.customer_id = b.customer_id
+		LEFT JOIN org_project_relation c 
+			ON a.org_id = c.org_id
+		WHERE
+			c.project_id =#{projectId}
+	<![CDATA[and b.rent_begin <=#{date}]]>
+			AND b.rent_end >=#{date}
+			AND b.status_code = '04'
+		<if test="contractType !=null and contractType!='' ">
+			and b.contract_type=#{contractType}
+		</if>
+	</select>
+	
+	<select id="queryInTenantTotalByType" resultType="String">
+		SELECT
+			count(DISTINCT a.customer_id)
+		FROM
+			customer a
+		LEFT JOIN contract b 
+			ON a.customer_id = b.customer_id
+		LEFT JOIN org_project_relation c 
+			ON a.org_id = c.org_id
+		WHERE
+			c.project_id =#{projectId}
+			AND b.status_code = '04'
+		<if test="nowDate !=null and nowDate !='' ">
+			<![CDATA[and b.rent_begin<=#{nowDate} ]]>
+		</if>
+		<if test="type =='01' ">
+			AND DATE_FORMAT(b.rent_begin, "%Y")=#{date}
+		</if>
+		<if test="type =='02' ">
+			AND DATE_FORMAT(b.rent_begin, "%Y-%m")=#{date}
+		</if>
+		<if test="type =='03' ">
+			AND DATE_FORMAT(b.rent_begin, "%Y-%m-%d")=#{date}
+		</if>
+		<if test="contractType !=null and contractType!='' ">
+			and b.contract_type=#{contractType}
+		</if>
+		
+	</select>
+	
+	
+	<select id="queryOutTenantTotalByType" resultType="String">
+		SELECT
+			count(DISTINCT a.customer_id)
+		FROM
+			customer a
+		LEFT JOIN contract b 
+			ON a.customer_id = b.customer_id
+		LEFT JOIN org_project_relation c 
+			ON a.org_id = c.org_id
+		WHERE
+			c.project_id =#{projectId}
+			AND b.status_code = '04'
+		<if test="nowDate !=null and nowDate !='' ">
+			<![CDATA[and b.rent_end<=#{nowDate} ]]>
+		</if>
+		<if test="type =='01' ">
+			AND DATE_FORMAT(b.rent_end, "%Y")=#{date}
+		</if>
+		<if test="type =='02' ">
+			AND DATE_FORMAT(b.rent_end, "%Y-%m")=#{date}
+		</if>
+		<if test="type =='03' ">
+			AND DATE_FORMAT(b.rent_end, "%Y-%m-%d")=#{date}
+		</if>
+		<if test="contractType !=null and contractType!='' ">
+			and b.contract_type=#{contractType}
+		</if>
+	</select>
+
+	<select id="queryRentList" resultType="com.bossbutler.pojo.chart.RentModel">
+		SELECT
+			b.bill_id as billId,
+			b.begin_date as beginDate,
+			b.end_date as endDate,
+			IFNULL(a.floorage_area,0.00) as floorageArea,
+			a.contract_id as contractId,
+			IFNULL(b.initial_amount,0.00)/(datediff(b.end_date, b.begin_date) + 1) as rentDaysAmount
+		FROM
+			contract a
+		LEFT JOIN bill b 
+			ON a.contract_id = b.contract_id
+		left join customer c
+			on a.customer_id=c.customer_id
+		left join org_project_relation d
+			on c.org_id=d.org_id
+		where 
+			d.project_id=#{projectId}
+		and bill_id is not null 
+		AND a.status_code = '04'
+	<![CDATA[	and DATE_FORMAT(b.begin_date,'%Y') <=#{date} ]]>
+		and DATE_FORMAT(b.end_date,'%Y') >=#{date}
+		<if test="contractType !=null and contractType!='' ">
+			and a.contract_type=#{contractType}
+		</if>
+		ORDER BY
+			b.begin_date
+	</select>
+	<select id="netReceiptsCharAtList" resultType="com.bossbutler.pojo.chart.ChargingOverview">
+		SELECT
+			IFNULL(sum(a.amount),0.0) as amount,
+			d.charge_name as chargeName,
+			b.charge_id as chargeId
+		FROM
+			order_payable a
+		left join bill_debtor b
+			on a.debtor_id=b.debtor_id
+		left join bill c
+			on b.bill_id=c.bill_id
+		left join charge d
+			on b.charge_id=d.charge_id
+		left join customer e
+			on c.customer_id=e.customer_id
+		left join org_project_relation f
+			on e.org_id=f.org_id
+		WHERE
+			a.payable_type='02'
+			and f.project_id=#{projectId}
+			<if test="billType !=null and billType !=''">
+				and c.bill_type=#{billType}
+			</if>
+			<if test="beginDate !=null and beginDate !=''">
+				and c.bill_date >=#{beginDate}
+			</if>
+			<if test="endDate !=null and endDate !=''">
+				<![CDATA[and c.bill_date <=#{endDate}]]>
+			</if>
+			<if test="chargeType !=null and chargeType!=''">
+				<if test="chargeType=='01'">
+					and b.charge_id='1102'
+				</if>
+				<if test="chargeType=='02'">
+					and b.charge_id='1202'
+				</if>
+				<if test="chargeType=='03'">
+					and d.charge_type='0103'
+				</if>
+				<if test="chargeType=='04'">
+					and d.charge_id not in('1102','1202') and d.charge_type !='0103'
+				</if>
+			</if>
+		group by 
+			d.charge_name,
+			b.charge_id
+	</select>
+	
+	<select id="payableCharAtList" resultType="com.bossbutler.pojo.chart.ChargingOverview">
+		SELECT
+			IFNULL(sum(b.amount),0.0) as amount,
+			d.charge_name as chargeName,
+			b.charge_id as chargeId
+		FROM
+			bill_debtor b
+		left join bill c
+			on b.bill_id=c.bill_id
+		left join charge d
+			on b.charge_id=d.charge_id
+		left join org_project_relation f
+			on c.org_id=f.org_id
+		WHERE
+			 f.project_id=#{projectId}
+			 and c.status_code in('05','06','07')
+			<if test="billType !=null and billType !=''">
+				and c.bill_type=#{billType}
+			</if>
+			<if test="beginDate !=null and beginDate !=''">
+				and c.bill_date >=#{beginDate}
+			</if>
+			<if test="endDate !=null and endDate !=''">
+				<![CDATA[and c.bill_date <=#{endDate}]]>
+			</if>
+			<if test="chargeType !=null and chargeType!=''">
+				<if test="chargeType=='01'">
+					and b.charge_id='1102'
+				</if>
+				<if test="chargeType=='02'">
+					and b.charge_id='1202'
+				</if>
+				<if test="chargeType=='03'">
+					and d.charge_type='0103'
+				</if>
+				<if test="chargeType=='04'">
+					and d.charge_id not in('1102','1202') and d.charge_type !='0103'
+				</if>
+			</if>
+		group by 
+			d.charge_name,
+			b.charge_id
+	</select>
+
+</mapper>

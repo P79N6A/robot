@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.customerservice.CusBillOperationMapper">
+	<update id="updatecancel">
+		update service_bill a set
+		a.status_code='09',a.operator_id=#{accountId},a.status_time=sysdate()
+		where
+		a.bill_id=#{serverId}
+	</update>
+	<insert id="insertserviceprogresscancel">
+		insert into service_progress
+		(
+		progress_id,
+		bill_id,
+		status_code,
+		status_time,
+		operator_id,
+		create_time
+		)values(
+		#{progressId},
+		#{serverId},
+		'09',
+		sysdate(),
+		#{accountId},
+		sysdate()
+		)
+
+	</insert>
+	<select id="queryservicer" resultType="servicer">
+		SELECT
+		b.account_id AS empId,
+		b.emp_name AS NAME,
+		d.dept_id AS deptId,
+		d.dept_name AS servertype,
+		cast( (AVG(e.attitude)+avg(e.efficient) + avg(e.skills)+avg(e.image))/4 as
+		decimal(10,2))
+		AS srouce
+		FROM
+		service_progress a
+		JOIN emp b ON a.operator_id = b.account_id
+		LEFT JOIN emp_dept_relation c ON b.emp_id = c.emp_id
+		LEFT JOIN dept d ON c.dept_id = d.dept_id
+		LEFT JOIN service_evaluation e ON a.operator_id = e.account_id
+		WHERE
+		a.bill_id =#{serverId}
+		AND a.status_code = '06'
+		GROUP BY
+		b.account_id,
+		b.emp_name,
+		c.dept_id,
+		d.dept_name
+	</select>
+	<select id="queryaddress" resultType="serverproject">
+		SELECT DISTINCT
+		e.project_id as projectId,e.project_name as projectName,e.address as
+		address
+		from account a
+		join emp b on
+		a.account_id=b.account_id
+		join
+		emp_project_relation d on
+		b.emp_id=d.emp_id
+		join project e on
+		d.project_id=e.project_id
+		where
+		a.account_id=#{accountId}
+	</select>
+	<insert id="insertserver">
+		insert into service_bill
+		(
+		bill_id,
+		account_id,
+		project_id,
+		bill_type,
+		bill_title,
+		bill_desc,
+		bill_address,
+		link_man,
+		link_phone,
+		operator_id,
+		status_code,
+		status_time,
+		create_time,
+		expect_begin,
+		expect_end,
+		bill_code
+		)values(
+		#{serverId},
+		#{accountId},
+		#{projectId},
+		#{serverType},
+		#{tittle},
+		#{content},
+		#{address},
+		#{customerName},
+		#{phone},
+		#{accountId},
+		'02',
+		sysdate(),
+		sysdate(),
+		#{begintime},
+		#{endtime},
+		#{servercode}
+		)
+	</insert>
+	<insert id="insertserverprogress">
+		insert into service_progress
+		(
+		progress_id,
+		bill_id,
+		status_code,
+		status_time,
+		create_time,
+		operator_id
+		)values(
+		#{progressId},
+		#{serverId},
+		'02',
+		sysdate(),
+		sysdate(),
+		#{accountId}
+		)
+	</insert>
+	<insert id="insertservice_evaluation">
+		insert into service_evaluation
+		(
+		evaluation_id,
+		bill_id,
+		skills,
+		attitude,
+		image,
+		efficient,
+		create_time,
+		operator_id,
+		remark,
+		account_id
+		)values(
+		#{evaluationId},
+		#{serverId},
+		#{skills},
+		#{attitude},
+		#{grooming},
+		#{response},
+		sysdate(),
+		#{accountId},
+		#{remark},
+		#{commentsId}
+		)
+
+	</insert>
+</mapper>

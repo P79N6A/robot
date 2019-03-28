@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.news.NewsMapper">
+	<resultMap id="baseResultMap" type="com.bossbutler.pojo.news.NewsModel">
+		<result column="news_id" property="newsId"/>
+		<result column="news_title" property="newsTitle"/>
+		<result column="org_id" property="orgId"/>
+		<result column="org_type" property="orgType"/>
+		<result column="contents" property="contents"/>
+		<result column="media_id" property="mediaId"/>
+		<result column="news_url" property="newsUrl"/>
+		<result column="hot_date" property="hotDate"/>
+		<result column="expired_day" property="expiredDay"/>
+		<result column="show_place" property="newsPlace"/>
+		<result column="status_code" property="statusCode"/>
+		<result column="status_time" property="statusTime"/>
+		<result column="create_time" property="createTime"/>
+		<result column="update_time" property="updateTime"/>
+		<result column="operator_id" property="operatorId"/>
+		<result column="data_version" property="dataVersion"/>
+		
+	</resultMap>
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="base_Column_List">
+		a.news_id,
+		a.news_title,
+		a.org_id,
+		a.org_type,
+		a.contents,
+		a.media_id,
+		a.news_url,
+		a.hot_date,
+		a.expired_day,
+		a.show_place,
+		a.ordinal,
+		a.status_code,
+		a.operator_id
+	</sql>
+	
+	
+	
+	<select id="queryDynamic" resultMap="baseResultMap">
+		select 
+			DISTINCT
+			a.news_id,
+			a.news_title,
+			a.media_id,
+			a.news_url,
+			a.show_place,
+			a.ordinal,
+			pm.create_time as mediaCreateTime,
+			a.data_version
+		from news a
+		left join project_news b
+			on a.news_id=b.news_id
+		left join project_media pm
+			on a.media_id=pm.media_id
+		
+		<where>
+			<if test="model.projectIds !=null and model.projectIds.size>0">
+				<foreach collection="model.projectIds" item="item" separator="," open="b.project_id in(" close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="model.newsPlace !=null and model.newsPlace !=''">
+				and a.show_place=#{model.newsPlace}
+			</if>
+			<if test="model.orgType !=null and model.orgType !='' ">
+				and a.org_type=#{model.orgType}
+			</if>
+			and a.status_code='03' and b.status_code='01'
+<![CDATA[	and hot_date <= DATE_FORMAT(SYSDATE(),'%Y-%m-%d') 
+			and (TO_DAYS(SYSDATE())- TO_DAYS(hot_date) <a.expired_day+1 or a.expired_day <0) ]]>	
+			
+		</where>
+		order by a.org_type desc,a.show_place asc
+	</select>
+	
+	<select id="findById" resultMap="baseResultMap">
+		select 
+			DISTINCT
+			<include refid="base_Column_List" />
+		from news a
+		where a.news_id=#{newsId}
+	</select>
+	
+</mapper>

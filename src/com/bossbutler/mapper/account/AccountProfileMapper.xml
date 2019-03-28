@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.account.AccountProfileMapper">
+	<resultMap type="com.bossbutler.pojo.account.AccountProfileModel" id="accountProfileMap">
+		<result property="profileId" column="profile_id" />
+		<result property="accountId" column="account_id"/>
+		<result property="accountCode" column="account_code"/>
+		<result property="type" column="type"/>
+		<result property="name" column="name"/>
+		<result property="profile" column="profile"/>
+		<result property="statusCode" column="status_code"/>
+		<result property="statusTime" column="status_time"/>
+		<result property="updateTime" column="update_time"/>
+		<result property="operatorId" column="operator_id"/>
+	</resultMap>
+
+	<sql id="accountProFillColumns">
+	    <![CDATA[
+        	profile_id,
+        	account_id,
+        	account_code,
+     		type,
+     		name,
+     		profile,
+     		status_code,
+     		status_time,
+     		create_time,
+     		update_time,
+     		operator_id
+	    ]]>
+	</sql>
+	<select id="getAccountProfileByParam" resultType="string" parameterType="map">
+		select profile from account_profile 
+		where status_code = '01'
+		<if test="accountId != null and accountId != '' ">
+			and account_id = #{accountId}
+		</if>
+		<if test="type != null and type != '' ">
+			and type = #{type}
+		</if>
+	</select>
+	<select id="queryDynamic" resultMap="accountProfileMap">
+		select  <include refid="accountProFillColumns" />
+		from account_profile 
+		<where>
+			<if test="model.accountId != null and model.accountId != '' ">
+				and account_id = #{model.accountId}
+			</if>
+			<if test="model.type != null and model.type != '' ">
+				and type = #{model.type}
+			</if>
+			or 1!=1
+		</where> 
+	</select>
+	<insert id="insertDynamic" >
+	 		insert into account_profile
+	 		<trim prefix="(" suffix=")" suffixOverrides=",">
+	 			<if test="model.profileId !=null and model.profileId !=''">
+	 				profile_id,
+	 			</if>
+	 			<if test="model.accountId !=null and model.accountId !=''">
+	 				account_id,
+	 			</if>
+	 			<if test="model.accountCode !=null and model.accountCode !=''">
+	 				account_code,
+	 			</if>
+	 			<if test="model.type !=null and model.type !=''">
+	 				type,
+	 			</if>
+	 			<if test="model.name !=null and model.name !=''">
+	 				name,
+	 			</if>
+	 			<if test="model.profile !=null and model.profile !=''">
+	 				profile,
+	 			</if>
+	 			<if test="model.statusCode !=null and model.statusCode !=''">
+	 				status_code,
+	 			</if>
+	 			status_time,
+     			create_time,
+     			update_time,
+	 			<if test="model.operatorId !=null and model.operatorId !=''">
+	 				operator_id
+	 			</if>
+        		
+	 		</trim>
+			<trim prefix="values (" suffix=")" suffixOverrides=",">
+	 			<if test="model.profileId !=null and model.profileId !=''">
+	 				#{model.profileId},
+	 			</if>
+	 			<if test="model.accountId !=null and model.accountId !=''">
+	 				#{model.accountId},
+	 			</if>
+	 			<if test="model.accountCode !=null and model.accountCode !=''">
+	 				#{model.accountCode},
+	 			</if>
+	 			<if test="model.type !=null and model.type !=''">
+	 				#{model.type},
+	 			</if>
+	 			<if test="model.name !=null and model.name !=''">
+	 				#{model.name},
+	 			</if>
+	 			<if test="model.profile !=null and model.profile !=''">
+	 				#{model.profile},
+	 			</if>
+	 			<if test="model.statusCode !=null and model.statusCode !=''">
+	 				#{model.statusCode},
+	 			</if>
+	 			SYSDATE(),
+	 			SYSDATE(),
+	 			SYSDATE(),
+	 			<if test="model.operatorId !=null and model.operatorId !=''">
+	 				#{model.operatorId}
+	 			</if>
+	 		</trim>
+	 
+	</insert>
+	
+	<update id="update" >
+	 	update account_profile set 
+	 		update_time=SYSDATE(),
+	 		profile=#{model.profile}
+	 	where  profile_id=#{model.profileId}
+	 	
+	 </update>
+</mapper>

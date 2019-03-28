@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.bossbutler.mapper.complaintdispose.ComplaintdisposeMapper">
+
+	<resultMap id="ComplaintDispose" type="com.bossbutler.pojo.complaintdispose.ComplaintdisposeModel">
+        <result property="disposeId" column="dispose_id"/>
+        <result property="complaintId" column="complaint_id"/>
+        <result property="statusCode" column="status_code"/>
+        <result property="statusTime" column="status_time"/>
+        <result property="statusRemark" column="status_remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="operatorId" column="operator_id"/>
+	</resultMap>
+	
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="ComplaintDisposecolumns">
+	    <![CDATA[
+        	dispose_id,
+        	complaint_id,
+        	status_code,
+        	status_time,
+        	status_remark,
+        	create_time,
+        	update_time,
+        	operator_id
+	    ]]>
+	</sql>
+	 <select id="queryDynamic" resultMap="ComplaintDispose">
+        SELECT <include refid="ComplaintDisposecolumns" />  FROM  complaint_dispose 
+		<where>
+		  <if test="disposeId!=null">
+        	   and  dispose_id =#{disposeId} 
+			</if>
+		  <if test="complaintId!=null">
+        	   and  complaint_id =#{complaintId} 
+			</if>
+		  <if test="statusCode!=null">
+        	   and  status_code =#{statusCode} 
+			</if>
+		  <if test="statusTime!=null">
+        	   and  status_time =#{statusTime} 
+			</if>
+		  <if test="statusRemark!=null">
+        	   and  status_remark =#{statusRemark} 
+			</if>
+		  <if test="createTime!=null">
+        	   and  create_time =#{createTime} 
+			</if>
+		  <if test="updateTime!=null">
+        	   and  update_time =#{updateTime} 
+			</if>
+		  <if test="operatorId!=null">
+        	   and  operator_id =#{operatorId} 
+			</if>
+	   </where>
+	</select>
+	
+	<insert id="insert" useGeneratedKeys="true" keyProperty="disposeId">
+    <![CDATA[
+        INSERT INTO complaint_dispose (
+        	dispose_id ,
+        	complaint_id ,
+        	status_code ,
+        	status_time ,
+        	status_remark ,
+        	create_time ,
+        	update_time ,
+        	operator_id 
+        ) VALUES (
+        	#{disposeId} ,
+        	#{complaintId} ,
+        	#{statusCode} ,
+        	#{statusTime} ,
+        	#{statusRemark} ,
+        	#{createTime} ,
+        	#{updateTime} ,
+        	#{operatorId} 
+        )
+    ]]>
+	</insert>
+	
+	
+	
+</mapper>

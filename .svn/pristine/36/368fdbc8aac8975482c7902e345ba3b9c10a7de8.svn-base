@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.system.EmpMapper">
+	<resultMap id="empRelations" type="com.bossbutler.pojo.system.EmpRelations">
+		<result property="empId" column="emp_id" />
+		<result property="empName" column="emp_name" />
+		<result property="mobilephone" column="mobilephone" />
+		<result property="accountId" column="account_id" />
+		<result property="projectId" column="project_id" />
+		<result property="orgId" column="org_id" />
+		<result property="superId" column="super_id" />
+		<result property="superName" column="super_name" />
+		<result property="roles" column="roles" />
+	</resultMap>
+	<resultMap id="empM" type="com.bossbutler.pojo.system.Employee">
+		<result property="orgId" column="org_id" />
+		<result property="empId" column="emp_id" />
+		<result property="empName" column="emp_name" />
+		<result property="mobilephone" column="mobilephone" />
+		<result property="email" column="email" />
+		<result property="gender" column="gender" />
+		<result property="accountId" column="account_id" />
+		<result property="roles" column="roles" />
+		<result property="statusCode" column="status_code" />
+		<result property="statusTime" column="status_time" />
+		<result property="createTime" column="create_time" />
+		<result property="updateTime" column="update_time" />
+		<result property="operatorId" column="operator_id" />
+		<result property="dataVersion" column="data_version" />
+		<!--其他表数据 -->
+		<result property="deptId" column="dept_id" />
+		<result property="deptName" column="dept_name" />
+		<result property="eprRoles" column="epr_roles" />
+		<!--邀请码字段 -->
+		<result column="invitation_status" property="invitationStatus"
+			jdbcType="VARCHAR" />
+		<result column="invitation_code" property="invitationCode"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="employeeColumns">
+	    <![CDATA[
+        	emp_id,
+        	org_id,
+        	emp_name,
+        	emp_type,
+        	mobilephone,
+        	email,
+        	gender,
+        	account_id,
+        	roles,
+        	status_code,
+        	status_time,
+        	create_time,
+        	update_time,
+        	operator_id,
+         	data_version
+	    ]]>
+	</sql>
+	<update id="update" parameterType="com.bossbutler.pojo.system.Employee">
+		update emp
+		<set>
+			<if test="orgId != 0">
+				org_id = #{orgId,jdbcType=BIGINT},
+			</if>
+			<if test="empName != null">
+				emp_name = #{empName,jdbcType=VARCHAR},
+			</if>
+			<if test="mobilephone != null">
+				mobilephone = #{mobilephone,jdbcType=VARCHAR},
+			</if>
+			<if test="email != null">
+				email = #{email,jdbcType=VARCHAR},
+			</if>
+			<if test="gender != null">
+				gender = #{gender,jdbcType=CHAR},
+			</if>
+			<if test="accountId != null">
+				account_id = #{accountId,jdbcType=BIGINT},
+			</if>
+			<if test="roles != 0">
+				roles = #{roles,jdbcType=BIGINT},
+			</if>
+			<if test="statusCode != null">
+				status_code = #{statusCode,jdbcType=CHAR},
+			</if>
+			<if test="statusTime != null">
+				status_time = #{statusTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="operatorId != 0">
+				operator_id = #{operatorId,jdbcType=BIGINT},
+			</if>
+		</set>
+		where emp_id = #{empId}
+	</update>
+	<select id="queryEmpByAccProPer" parameterType="hashmap"
+		resultMap="empRelations">
+		select
+			e.emp_id,
+			e.emp_name,
+			e.mobilephone,
+			epr.project_id,
+			e.account_id,
+			e.org_id,
+			po.org_id
+			super_id,
+			epr.roles,
+			po.org_name super_name 
+		from emp e
+		left join
+			emp_project_relation epr on e.emp_id = epr.emp_id
+		left join org o on
+			e.org_id = o.org_id
+		left join org po 
+			on o.supper_id = po.org_id
+		<where>
+			<if test="accountId != null and accountId != 0 ">
+				e.account_id = #{accountId}
+			</if>
+			<if test="projectId != null and projectId != 0 ">
+				and epr.project_id = #{projectId}
+			</if>
+			<if test="orgId != null and orgId != 0 ">
+				and e.org_id = #{orgId}
+			</if>
+			<if test="permission != null and permission != 0">
+			 <![CDATA[  
+				 and epr.roles & #{permission}
+			 ]]>
+			</if>
+			<if test="statusCode !=null and statusCode !=0">
+				and e.status_code=#{statusCode}
+			</if>
+			<if test="dutyType !=null and dutyType !=''">
+				and o.duty_type=#{dutyType}
+			</if>
+			or 1!=1
+		</where>
+	</select>
+		<select id="queryEmpByAcc" parameterType="hashmap"
+		resultMap="empRelations">
+		select
+		e.emp_id,e.emp_name,e.mobilephone,epr.project_id,p.project_name,e.account_id,e.org_id,po.org_id
+		super_id,epr.roles,po.org_name super_name from emp e
+		left join	emp_project_relation epr on e.emp_id = epr.emp_id
+		left join org o on e.org_id = o.org_id
+		left join org po on o.supper_id = po.org_id
+		left join project p on epr.project_id = p.project_id
+		where o.duty_type = '0302' and e.status_code = '01'
+		and e.account_id =#{accountId}
+		<if test="projectId != '' and projectId != null">
+		  and p.project_id = #{projectId}
+		</if>
+	</select>
+	<select id="findByPrimaryKey" parameterType="String" resultMap="empM">
+		select e.* from emp e where e.emp_id = #{empId}
+	</select>
+	<select id="queryDynamic" resultMap="empM">
+		SELECT
+		<include refid="employeeColumns" />
+		FROM emp
+		<where>
+			<if test="empId!=null and empId != 0 ">
+				emp_id =#{empId}
+			</if>
+			<if test="orgId!=null and orgId != 0 ">
+				and org_id =#{orgId}
+			</if>
+			<if test="empName!=null">
+				and emp_name =#{empName}
+			</if>
+			<if test="mobilephone!=null">
+				and mobilephone =#{mobilephone}
+			</if>
+			<if test="email!=null">
+				and email =#{email}
+			</if>
+			<if test="gender!=null">
+				and gender =#{gender}
+			</if>
+			<if test="accountId!=null and accountId != 0 ">
+				and account_id =#{accountId}
+			</if>
+			<if test="roles!=null  and roles != 0 ">
+				and roles =#{roles}
+			</if>
+			<if test="statusCode!=null">
+				and status_code =#{statusCode}
+			</if>
+			<if test="statusTime!=null">
+				and status_time =#{statusTime}
+			</if>
+			<if test="createTime!=null">
+				and create_time =#{createTime}
+			</if>
+			<if test="updateTime!=null">
+				and update_time =#{updateTime}
+			</if>
+			<if test="operatorId!=null">
+				and operator_id =#{operatorId}
+			</if>
+			<if test="notEmpId != null and notEmpId !=0">
+				and emp_id != #{notEmpId}
+			</if>
+		</where>
+	</select>
+</mapper>

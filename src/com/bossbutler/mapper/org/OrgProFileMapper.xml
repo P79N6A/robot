@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.org.OrgProFileMapper">
+ 	<resultMap id="orgProFileMediaM" type="com.bossbutler.pojo.org.OrgProFileModel">
+ 		<result property="profileId" column="profile_Id"/>
+        <result property="orgId" column="org_id"/>
+     	<result property="type" column="type"/>
+     	<result property="name" column="name"/>
+     	<result property="profile" column="profile"/>
+     	<result property="statusCode" column="status_code" />
+     	<result property="statusTime" column="status_time"/>
+     	<result property="createTime" column="create_time"/>
+     	<result property="updateTime" column="update_time"/>
+	</resultMap>
+	
+	
+		<!-- 用于select查询公用抽取的列 -->
+	<sql id="orgProFillColumns">
+	    <![CDATA[
+        	profile_Id,
+        	org_id,
+     		type,
+     		name,
+     		profile,
+     		status_code,
+     		status_time,
+     		create_time,
+     		update_time
+	    ]]>
+	</sql>
+	 <select id="getOrgProfile" resultMap="orgProFileMediaM">
+	 	select 
+	 		<include refid="orgProFillColumns"></include> 
+	 	from 
+	 		org_profile 
+	 	<where>
+	 		<if test="model.orgId !=null">
+	 			and org_id=#{model.orgId} 
+	 		</if>
+	 		<if test="model.type !=null and model.type !=''">
+	 			and type=#{model.type}
+	 		</if>
+	 		<if test="model.profileId !=null ">
+	 			and profile_id=#{model.profileId}
+	 		</if>
+	 	</where> 	
+	 </select>
+	 <insert id="insert" >
+	 		insert into org_profile(
+	 			<include refid="orgProFillColumns"></include>
+	 		)
+	 		values(
+	 			#{model.profileId},
+	 			#{model.orgId},
+	 			#{model.type},
+	 			(select data_name from dictionary_data a where data_id=#{model.type}),
+	 			#{model.profile},
+	 			#{model.statusCode},
+	 			SYSDATE(),
+	 			SYSDATE(),
+	 			SYSDATE()
+	 		) 
+	 </insert>
+  	 <delete id="deleteOrgMediaById" parameterType="String">
+  	 	delete from org_media where media_id=#{media_id}
+  	 </delete>
+	 <update id="update" >
+	 	update org_profile set 
+	 		update_time=SYSDATE(),
+	 		profile=#{model.profile}
+	 	where org_id=#{model.orgId} and type=#{model.type} 
+	 	<if test="model.profileId !=null">
+	 		and profile_id=#{model.profileId}
+	 	</if>
+	 </update>
+	 <delete id="deleteById">
+	 	delete from org_profile where profile_id=#{profileId}
+	 </delete>
+</mapper>

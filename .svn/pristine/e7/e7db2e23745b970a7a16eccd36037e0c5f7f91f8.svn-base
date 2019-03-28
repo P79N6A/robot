@@ -1,0 +1,204 @@
+﻿﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>上班的那点事</title>
+    <link href="../favicon.ico" type="image/x-icon" rel="icon">
+    <link href="styles/frozen.css" rel="stylesheet" />
+    <link href="styles/index.css" rel="stylesheet" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta name="format-detection" content="telephone=no">
+    <script src="scripts/zepto.min.js"></script>
+    <script src="scripts/frozen.js"></script>
+    <script src="scripts/index.js"></script>
+</head>
+<body style="background-color: rgba(242, 242, 242, 1)">
+<!--  广告位置 开始 -->
+    <div class="ui-slider">
+        <ul class="ui-slider-content" style="width: 400%">
+            <li class="current"><img src="styles/images/img_main_1.png" width="100%" /></li>
+            <li><img src="styles/images/img_main_2.png" width="100%" /></li>
+            <li><img src="styles/images/img_main_3.png" width="100%" /></li>
+            <li><img src="styles/images/img_main_4.png" width="100%" /></li>
+            
+        </ul>
+    </div>
+<!--  广告位置 结束 -->
+
+    <div class="row rowlist" id="rowlist">
+
+
+          <!-- new事 begin-->
+        <div class=" row mt20 bbw-list" onclick="document.location='http://mp.weixin.qq.com/s/UVRvbvo7ujFgpcyJ4iTCQg';">
+            <div class="row ">
+                <h2 class="bbw-app-h2title l ml10">
+                    <a href="javascript:void(0)">办公室爆笑漫画升级版！</a>
+                </h2>
+                <span class="r mr20 bbw-app-timer">2016-10-18</span>
+            </div>
+            <div class="row">
+                <h4 class="bbw-app-h4title ml10"><a href="javascript:void(0)">办公室爆笑漫画升级版——自恋！</a></h4>
+            </div>
+            <div class="row">
+                <div class="wp100 po_re">
+                    <span class="bbw-news bbw-tags"></span>
+                    <img src="styles/images/img-list-qu.png" width="100%" />
+                </div>
+
+         
+            </div>
+            
+        </div>
+
+        <!-- new end-->
+                
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- 正事 end-->
+
+
+
+          <!-- 趣事 begin-->
+        <div class=" row mt20 bbw-list" onclick="document.location='http://mp.weixin.qq.com/s/_OnCABndCE9EEKVbxk_19w';">
+            <div class="row ">
+                <h2 class="bbw-app-h2title l ml10">
+                    <a href="javascript:void(0)">废土之惧！</a>
+                </h2>
+                <span class="r mr20 bbw-app-timer">2016-9-30</span>
+            </div>
+            <div class="row">
+                <h4 class="bbw-app-h4title ml10"><a href="javascript:void(0)">包办最新力作——废土之惧！</a></h4>
+            </div>
+            <div class="row">
+                <div class="wp100 po_re">
+                    <span class="bbw-qu bbw-tags"></span>
+                    <img src="styles/images/mrft.jpg" width="100%" />
+                </div>
+
+         
+            </div>
+            
+        </div>
+
+        <!-- 趣事 end-->
+
+        <!-- 正事 begin-->
+        <div class=" row mt20 bbw-list" onclick="document.location='http://mp.weixin.qq.com/s?__biz=MzI0OTA0MDc5NA==&mid=2649806099&idx=1&sn=2d58b9774d9d8fbe251bb116b6f6641b&scene=4#wechat_redirect';">
+            <div class="row ">
+                <h2 class="bbw-app-h2title l ml10">
+                    <a href="javascript:void(0)">【装修宝典】</a>
+                </h2>
+                <span class="r mr20 bbw-app-timer">2016-8-25</span>
+            </div>
+            <div class="row">
+                <h4 class="bbw-app-h4title ml10"><a href="javascript:void(0)">办公室软装怎么装？看完这个你就懂了！</a></h4>
+            </div>
+            <div class="row">
+                <div class="wp100 po_re">
+                    <span class="bbw-zheng bbw-tags"></span>
+                    <img src="styles/images/img_main_6.jpg" width="100%" />
+                
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- 正事 end-->
+
+
+
+        <!-- new 事 begin-->
+        <!-- onclick 修改为目标地址-->
+        <div class=" row mt20 bbw-list"  onclick="document.location='http://mp.weixin.qq.com/s?__biz=MzI0NjA0ODE1OA==&mid=2651680223&idx=1&sn=2275a6cce21ac4aab6294e1262dc4f4c&chksm=f2bcf92ec5cb7038ef532dac733aacd754ce7b5b4263730a5c4b7417f136e24e5f71997f8756#rd'">
+            <div class="row ">
+                <h2 class="bbw-app-h2title l ml10">
+		   <!-- 文章标题-->
+                   <a href="javascript:void(0)" >中秋节快乐！</a>
+                </h2>
+		<!-- 发布时间-->
+                <span class="r mr20 bbw-app-timer">2016-9-13 </span>
+            </div>
+            <div class="row">
+		<!-- 文章描述-->
+                <h4 class="bbw-app-h4title ml10"><a href="javascript:void(0)">包办网祝大家2016年中秋节快乐</a></h4>
+            </div>
+            <div class="row">
+                <div class="wp100 po_re">
+		    <!-- 标签 bbw-news、bbw-qu、bbw-zheng、bbw-gushi、bbw-pianyi-->	
+                    <span class="bbw-news bbw-tags"></span>
+                    <!-- 图片-->
+                    <img src="styles/images/moon-1app.jpg" width="100%" />
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- new事 end-->
+            
+
+
+
+
+        <!-- 趣事 begin-->
+        <div class=" row mt20 bbw-list" onclick="document.location='http://mp.weixin.qq.com/s?__biz=MzI0NjA0ODE1OA==&mid=405228372&idx=1&sn=0a46f9b6f9bf14811043ab9de57e29e3#rd';">
+            <div class="row ">
+                <h2 class="bbw-app-h2title l ml10">
+                    <a href="javascript:void(0)">饭泡粥第二期---诗和远方</a>
+                </h2>
+                <span class="r mr20 bbw-app-timer">2016-4-14</span>
+            </div>
+            <div class="row">
+                <h4 class="bbw-app-h4title ml10"><a href="javascript:void(0)">上海爷叔话家长里短....</a></h4>
+            </div>
+            <div class="row">
+                <div class="wp100 po_re">
+                    <span class="bbw-qu bbw-tags"></span>
+                    <img src="styles/images/img-list-gushi.jpg" width="100%" />
+                
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- 趣事 end-->
+
+
+
+          <!-- 趣事 begin-->
+        <div class=" row mt20 bbw-list" onclick="document.location='http://mp.weixin.qq.com/s?__biz=MzI0NjA0ODE1OA==&mid=2651680050&idx=1&sn=00c483636782ca698f6ac0e71e0f9a22#rd';">
+            <div class="row ">
+                <h2 class="bbw-app-h2title l ml10">
+                    <a href="javascript:void(0)">饭泡粥第一期---上海爷叔拉讲，好白相</a>
+                </h2>
+                <span class="r mr20 bbw-app-timer">2016-4-7</span>
+            </div>
+            <div class="row">
+                <h4 class="bbw-app-h4title ml10"><a href="javascript:void(0)">上海爷叔话家长里短...</a></h4>
+            </div>
+            <div class="row">
+                <div class="wp100 po_re">
+                    <span class="bbw-qu bbw-tags"></span>
+                    <img src="styles/images/sh-yeshu0407.jpg" width="100%" />
+                </div>
+
+         
+            </div>
+            
+        </div>
+
+        <!-- 趣事 end-->
+
+
+
+
+    </div>
+
+</body>
+</html>
+
+

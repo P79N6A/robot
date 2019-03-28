@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.myregional.ArrangeMapper">
+	<resultMap id="arrangeM" type="com.bossbutler.mapper.myregional.Arrange">
+		<id column="arrange_id" property="arrangeId" />
+		<result column="project_id" property="projectId" />
+		<result column="org_id" property="orgId" />
+		<result column="arrange_code" property="arrangeCode" />
+		<result column="arrange_name" property="arrangeName" />
+		<result column="supper_id" property="supperId" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		arrange_id,
+		project_id,
+		arrange_code,
+		arrange_name,
+		supper_id,
+		entrance_type
+	</sql>
+	<select id="queryDynamic" resultMap="arrangeM"
+		parameterType="string">
+		select
+			a.arrange_id,
+			a.project_id,
+			a.arrange_name,
+			b.project_name as projectName
+		from  
+			arrange a 
+		left join project b
+			on a.project_id=b.project_id
+		<where>
+			<if test="projectId != '' and projectId != null">
+				and a.project_id=#{projectId}
+			</if>
+			<if test="projectIds !=null and projectIds.size>0">
+				and a.project_id 
+				<foreach collection="projectIds" item="id" open=" in (" close=") " separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="entrance_type !=null and entrance_type !=''">
+				and a.entrance_type=#{entrance_type}
+			</if>
+			<if test="arrangeIds !=null and arrangeIds !='' ">
+				and a.arrange_id in(${arrangeIds})
+			</if>
+			<if test="arrange_type !=null and arrange_type !=''">
+				and a.arrange_type=#{arrange_type}
+			</if>
+			or 1!=1
+		</where>
+	</select>
+	
+	
+	<select id="queryParentDynamic" resultMap="arrangeM"
+		parameterType="string">
+		select
+			a.arrange_id,
+			a.project_id,
+			a.arrange_name
+		from  
+			arrange a 
+		<where>
+			FIND_IN_SET(arrange_id,getArrageParentList(#{arrangeIds}))
+			<if test="projectId != '' and projectId != null">
+				and a.project_id=#{projectId}
+			</if>
+			<if test="projectIds !=null and projectIds.size>0">
+				and a.project_id 
+				<foreach collection="projectIds" item="id" open=" in (" close=") " separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="entrance_type !=null and entrance_type !=''">
+				and a.entrance_type=#{entrance_type}
+			</if>
+			
+			
+			
+		</where>
+	</select>
+	
+	<select id="getArrangeById" resultMap="arrangeM"
+		parameterType="string">
+		select
+			<include refid="Base_Column_List" />
+		from  
+			arrange a 
+		where  a.arrange_id =#{arrangeId})
+		
+	</select>
+	
+	
+	
+	<select id="getArrangeListByOrgIds" resultType="com.bossbutler.mapper.myregional.Arrange" >
+		SELECT DISTINCT
+			b.arrange_id as arrangeId,
+			a.org_id as orgId,
+			c.entrance_type as entrance_type
+		FROM
+			org_resource_relation a
+		JOIN arrange_resource b ON a.resource_id = b.resource_id
+		
+		left join arrange c on b.arrange_id=c.arrange_id
+		WHERE
+			a.org_id in(
+				<foreach collection="list" item="item" separator=",">
+					#{item}
+				</foreach>
+			)
+	</select>
+	
+	<select id="getArrangeByPId" resultType="com.bossbutler.mapper.myregional.Arrange">
+		SELECT DISTINCT
+			a.arrange_id as arrangeId,
+			a.entrance_type
+		FROM
+			arrange a
+		WHERE
+			a.project_id=#{projectId} and a.entrance_type='04'
+	</select>
+	
+	<select id="getParentArrange" resultType="com.bossbutler.mapper.myregional.Arrange" parameterType="java.lang.String">
+		select getSupperLst2(#{superIds}) as arrangeIds;  
+	</select>
+	
+	<select id="getArrangeByArrIdPrId" resultMap="arrangeM">
+		  SELECT * from arrange where arrange_id in (${status_code}) and project_id=#{projectId} and (entrance_type='01' or entrance_type='04')
+	</select>
+	<select id="getResArrByAccId" resultMap="arrangeM">
+		select distinct 
+			a.arrange_id ,
+			a.arrange_name,
+			a.project_id,
+			e.project_name projectName 
+		from arrange a 
+		join arrange_resource b
+			on a.arrange_id=b.arrange_id
+		left join org_resource_relation c
+			on b.resource_id=c.resource_id
+		left join emp d
+			on c.org_id=d.org_id
+		left join project e
+			on a.project_id=e.project_id
+		where 
+			d.account_id=#{accountId} 
+			and d.status_code='01'
+			and DATE_FORMAT(SYSDATE(),"%Y-%m-%d") BETWEEN c.begin_date and c.end_date
+	</select>
+	
+	<select id="getInArrByAccId" resultMap="arrangeM">
+		select distinct 
+			a.arrange_id,
+			a.arrange_name,
+			a.project_id,
+			p.project_name projectName 
+		from  arrange a 
+		join regional_arrange_relation b 
+			on a.arrange_id = b.arrange_id
+		join regional_emp_relation c 
+			on b.regional_id = c.regional_id
+		join emp d
+			on c.emp_id=d.emp_id
+		join project p 
+			on p.project_id = a.project_id
+		where d.account_id = #{accountId}
+		and a.arrange_type = '02'
+		and d.status_code='01'
+	</select>
+	
+	<select id="getInArrDynamic" resultMap="arrangeM">
+		select distinct 
+			a.arrange_id,
+			a.arrange_name,
+			a.project_id,
+			p.project_name projectName 
+		from  arrange a 
+		join regional_arrange_relation b 
+			on a.arrange_id = b.arrange_id
+		join regional_emp_relation c 
+			on b.regional_id = c.regional_id
+		join emp d
+			on c.emp_id=d.emp_id
+		join project p 
+			on p.project_id = a.project_id
+		<where>
+			<if test="arrange_type !=null and arrange_type !='' ">
+				a.arrange_type =#{arrange_type}
+			</if>
+			<if test="accountId !=null and accountId !='' ">
+				and d.account_id =#{accountId} 
+			</if>
+			<if test="projectIds !=null and projectIds.size>0">
+				and a.project_id 
+				<foreach collection="projectIds" item="id" open=" in (" close=") " separator=",">
+					#{id}
+				</foreach>
+			</if>
+			and d.status_code='01'
+		</where> 
+	</select>
+	
+	
+	<select id="getArrRegDynamic" resultMap="arrangeM">
+		select distinct 
+			a.arrange_id,
+			a.arrange_name 
+		from  arrange a 
+		join regional_arrange_relation rar 
+			on rar.arrange_id = a.arrange_id
+		join regional r
+			on rar.regional_id=r.regional_id
+		<where>
+			<if test="orgId !=null and orgId>0 ">
+				r.org_id=#{orgId}
+			</if>
+			<if test="regionalType !=null and regionalType !=''">
+				and r.regional_type=#{regionalType}
+			</if>
+			<if test="projectId !=null and projectId>0">
+				and a.project_id=#{projectId}
+			</if>
+			<if test="scopeType !=null and scopeType !=''">
+				and r.scope_type=#{scopeType}
+			</if>
+			or 1!=1
+		</where> 
+	</select>
+	
+	
+	<select id="getArrangeByReId" resultMap="arrangeM">
+		select 
+			ar.arrange_id
+		from arrange_resource ar
+		where ar.resource_id=#{resourceId}
+	</select>
+</mapper>

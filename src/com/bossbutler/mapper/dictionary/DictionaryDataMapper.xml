@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.bossbutler.mapper.dictionary.DictionaryDataMapper">
+	<resultMap id="customerdictionaryM" type="com.bossbutler.pojo.dictionary.DictionaryDataModel">
+		<result property="id" column="data_id" />
+		<result property="name" column="data_name" />
+		<result property="typeId" column="type_id" />
+		<result property="remark" column="remark"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		data_id,
+		data_name,
+		type_id,
+		remark
+	</sql>
+	<select id="queryDynamic" resultMap="customerdictionaryM">
+		select 
+			<include refid="Base_Column_List"/>
+		from dictionary_data
+		<where>
+			<if test="model.vagueDataId !=null and model.vagueDataId !='' ">
+				and data_id like CONCAT(#{model.vagueDataId},'%')
+			</if>
+			<if test="model.id !=null and model.id !=''">
+				and data_id =#{model.id}
+			</if>
+			<if test="model.name!=null  and model.name!=''">
+				and  data_name =#{model.name}
+			</if>
+			<if test="model.typeId!=null  and model.typeId!=''">
+				and  type_id =#{model.typeId}
+			</if>
+			<if test="model.remark!=null  and model.remark!=''">
+				and  remark =#{model.remark}
+			</if>
+			<if test="model.dataIdList!=null">
+				and  data_id  in
+				<foreach collection="model.dataIdList" item="item" close=")" open="(" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	 
+	
+</mapper>

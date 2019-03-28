@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<div>
+<div style="BACKGROUND-COLOR: white">
+<table dir="ltr">
+  <tbody>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #707070; FONT-SIZE: 17px; PADDING-TOP: 0px" id="i1">$!{company} 帐户</td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 25px">你的验证码为：$!{validcode}，有效期为$!{validcodeTime}分钟。</td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 25px">如果你没有请求该验证码，请忽略这封邮件</td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 25px">谢谢!</td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 0px" id="i8">$!{company} 帐户团队</td></tr></tbody></table></div></div>
+</body>
+</html>

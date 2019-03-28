@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.NoGeneratorMapper">
+
+	<select id="getNoGeneratorByUsedCat" resultType="hashmap"
+		parameterType="String">
+	select
+	num_id,
+	used_cat,
+	template,
+	start_num,
+	num_length,
+	next_value,
+	remark from
+	num_generator where used_cat=#{UsedCat}
+	</select>
+	<update id="updateNoGeneratorByUsedCat" parameterType="String">
+		update
+		num_generator set next_value=next_value+1 where used_cat=#{UsedCat}
+	</update>
+
+</mapper>

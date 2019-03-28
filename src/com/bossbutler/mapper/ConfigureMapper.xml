@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.ConfigureMapper">
+
+	<select id="selectMobileTemplateConfs" resultType="MobileMsgTemplate"
+		parameterType="string">
+			select
+		template_id templateId,
+		application_name applicationName,
+		template_type templateType,
+		template_name templateName,
+		contents,
+		create_time createTime,
+		remark,
+		disable
+		from sms_template
+		where
+		`disable`
+		= 0 and template_type = #{ttype}
+		and application_name = #{appCodeDescrib}
+	</select>
+</mapper>

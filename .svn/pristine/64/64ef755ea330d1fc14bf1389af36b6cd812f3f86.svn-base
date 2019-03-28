@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.myregional.BuildingMapper">
+	<resultMap id="buildingM" type="com.bossbutler.mapper.myregional.Building">
+		<id column="arrange_id" property="arrangeId" />
+		<result column="project_id" property="projectId" />
+		<result column="org_id" property="orgId" />
+		<result column="arrange_code" property="arrangeCode" />
+		<result column="arrange_name" property="arrangeName" />
+	</resultMap>
+	<resultMap id="ArrangeM" type="com.bossbutler.mapper.myregional.Arrange">
+		<id column="arrange_id" property="arrangeId" />
+		<result column="project_id" property="projectId" />
+		<result column="org_id" property="orgId" />
+		<result column="arrange_code" property="arrangeCode" />
+		<result column="arrange_name" property="arrangeName" />
+		<result column="supper_id" property="supperId" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		arrange_id,
+		project_id,
+		arrange_code,
+		arrange_name,
+		supper_id
+	</sql>
+	<select id="queryByProjectIdOrType" resultMap="buildingM"
+		parameterType="string">
+		select
+		<include refid="Base_Column_List" />
+		from  building a 
+		<where>
+			<if test="projectId != '' and projectId != null">
+				and a.project_id=#{projectId}
+			</if>
+			<if test="resourceType != '' and resourceType != null">
+				and a.resource_type=#{resourceType}
+			</if>
+			<if test="parentId != '' and parentId != null">
+				and a.supper_id=#{parentId}
+			</if>
+			<if test="arrangeId != '' and arrangeId != null">
+				and a.arrange_id=#{arrangeId}
+			</if>
+		</where>
+	</select>
+	<!-- 慎用 -->
+	<select id="queryResourceByFloor" resultMap="ArrangeM"
+		parameterType="string">
+		select 
+			r.room_name arrange_name,
+			group_concat(ar.arrange_id) resourceId,
+			orr.org_id,
+			r.resource_id as arrange_id
+		from resource r 
+		left join arrange_resource ar 
+			on ar.resource_id = r.resource_id
+		left join org_resource_relation orr 
+			on r.resource_id = orr.resource_id
+		where  
+			ar.arrange_id is not null 
+			and r.floor_arrange = #{arrangeId}
+		group by r.resource_id
+	</select>
+</mapper>

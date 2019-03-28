@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.bossbutler.mapper.news.NewsLogMapper">
+  <resultMap id="baseResultMap" type="com.bossbutler.pojo.news.NewsLogModel" >
+    <id column="log_id" property="logId" jdbcType="BIGINT" />
+    <result column="news_id" property="newsId" jdbcType="BIGINT" />
+    <result column="account_id" property="accountId" jdbcType="BIGINT" />
+    <result column="status_code" property="statusCode" jdbcType="CHAR" />
+    <result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+    <result column="status_remark" property="statusRemark" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+  </resultMap>
+	<insert id="insert">
+		  INSERT INTO news_log (
+        	log_id,
+        	news_id,
+        	account_id,
+			status_code,
+			status_time,
+			status_remark,
+			create_time,
+			update_time,
+			operator_id
+        ) VALUES (
+        	#{model.logId},
+        	#{model.newsId},
+			#{model.accountId},
+			#{model.statusCode},
+			sysdate(),
+			#{model.statusRemark},
+			sysdate(),
+			sysdate(),
+			#{model.operatorId}
+        )
+	</insert>
+	<select id="queryDynamic" resultMap="baseResultMap">
+		select 
+			log_id,
+        	news_id,
+        	account_id,
+			status_code,
+			status_time,
+			status_remark,
+			create_time,
+			update_time,
+			operator_id
+		from news_log a
+		<where>
+			<if test="model.newsId !=null and model.newsId!=''">
+				a.news_id=#{model.newsId}
+			</if>
+			<if test="model.accountId !=null and model.accountId">
+				and a.account_id=#{model.accountId}
+			</if>
+			or 1!=1
+		</where>
+	</select>
+</mapper>

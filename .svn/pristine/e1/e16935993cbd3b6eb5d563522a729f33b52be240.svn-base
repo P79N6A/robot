@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.system.AccountTransitMapper">
+	<resultMap id="BaseResultMap" type="com.bossbutler.pojo.system.AccountTransit">
+		<id column="transit_id" property="transitId" jdbcType="BIGINT" />
+		<result column="account_id" property="accountId" jdbcType="BIGINT" />
+		<result column="transit_type" property="transitType" jdbcType="CHAR" />
+		<result column="transit_code" property="transitCode" jdbcType="CHAR" />
+		<result column="status_code" property="statusCode" jdbcType="CHAR" />
+		<result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+		<result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		transit_id, account_id, transit_type, transit_code, status_code, status_time,
+		create_time,
+		update_time, operator_id, data_version
+	</sql>
+	<select id="findByTypeAccountId" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from account_transit
+		where account_id = #{accountId,jdbcType=BIGINT} and transit_type =
+		#{transitType}
+	</select>
+	<select id="findByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select
+		<include refid="Base_Column_List" />
+		from account_transit
+		where transit_id = #{transitId,jdbcType=BIGINT}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from account_transit
+		where transit_id = #{transitId,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.bossbutler.pojo.system.AccountTransit">
+		insert into account_transit
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="transitId != null">
+				transit_id,
+			</if>
+			<if test="accountId != null">
+				account_id,
+			</if>
+			<if test="transitType != null">
+				transit_type,
+			</if>
+			<if test="transitCode != null">
+				transit_code,
+			</if>
+			<if test="statusCode != null">
+				status_code,
+			</if>
+			<if test="statusTime != null">
+				status_time,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="operatorId != null">
+				operator_id
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="transitId != null">
+				#{transitId,jdbcType=BIGINT},
+			</if>
+			<if test="accountId != null">
+				#{accountId,jdbcType=BIGINT},
+			</if>
+			<if test="transitType != null">
+				#{transitType,jdbcType=CHAR},
+			</if>
+			<if test="transitCode != null">
+				#{transitCode,jdbcType=CHAR},
+			</if>
+			<if test="statusCode != null">
+				#{statusCode,jdbcType=CHAR},
+			</if>
+			<if test="statusTime != null">
+				#{statusTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="operatorId != null">
+				#{operatorId,jdbcType=BIGINT},
+			</if>
+		</trim>
+	</insert>
+	<update id="update" parameterType="com.bossbutler.pojo.system.AccountTransit">
+		update account_transit
+		<set>
+			<if test="accountId != null">
+				account_id = #{accountId,jdbcType=BIGINT},
+			</if>
+			<if test="transitType != null">
+				transit_type = #{transitType,jdbcType=CHAR},
+			</if>
+			<if test="transitCode != null">
+				transit_code = #{transitCode,jdbcType=CHAR},
+			</if>
+			<if test="statusCode != null">
+				status_code = #{statusCode,jdbcType=CHAR},
+			</if>
+			<if test="statusTime != null">
+				status_time = #{statusTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="operatorId != null">
+				operator_id = #{operatorId,jdbcType=BIGINT}
+			</if>
+		</set>
+		where transit_id = #{transitId,jdbcType=BIGINT}
+	</update>
+	<select id="hasIcCode" resultType="com.bossbutler.pojo.system.Account">
+		SELECT t.transit_id
+		transitId,t.account_id accountId,a.account_code accountCode, t.transit_code,a.login_name loginName
+		from account_transit t left join account a
+		on t.account_id = a.account_id
+		where
+		transit_code=#{icCode} and transit_type='01'
+	</select>
+	<select id="getAccontByEmpId" resultType="com.bossbutler.pojo.system.Account">
+		select DISTINCT e.emp_name,a.account_id
+		accountId,a.account_code accountCode,a.login_id,a.login_name,a.mobilephone,a.email,a.status_code,act.transit_code,act.transit_type
+		,rer.begin_date,rer.end_date
+		from account a
+		LEFT JOIN account_transit act on a.account_id=act.account_id
+		left join emp e on e.account_id=a.account_id
+		LEFT JOIN regional_emp_relation rer on rer.emp_id=e.emp_id
+		where  act.transit_type='01' and  rer.relation_id is not null and e.emp_id in
+		<foreach collection="list" item="item" open="(" separator=","
+			close=")">
+			#{item.emp_id}
+		</foreach>
+	</select>
+		<select id="getAccontByEmpId2" resultType="com.bossbutler.pojo.system.Account">
+		select DISTINCT e.emp_name,a.account_id
+		accountId,a.account_code accountCode,a.login_id,a.login_name,a.mobilephone,a.email,a.status_code,act.transit_code,act.transit_type,min(orr.begin_date) begin_date ,max(orr.end_date) end_date
+		from account a
+		LEFT JOIN account_transit act on a.account_id=act.account_id 
+		left join emp e on e.account_id=a.account_id 
+		LEFT JOIN org_resource_relation orr on orr.org_id=e.org_id
+		where  act.transit_type='01' and e.status_code='01' and e.emp_id in
+		<foreach collection="list" item="item" open="(" separator=","
+			close=")">
+			#{item.emp_id}
+		</foreach>
+		and orr.begin_date is not null 
+		GROUP BY act.transit_code
+	</select>
+</mapper>

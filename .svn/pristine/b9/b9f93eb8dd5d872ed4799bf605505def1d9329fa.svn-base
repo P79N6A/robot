@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<div>
+<div style="BACKGROUND-COLOR: white">
+<style type="text/css">
+.qmbox .link:link {
+	COLOR: #2672ec !important; TEXT-DECORATION: none !important}
+.qmbox .link:active {
+	COLOR: #2672ec !important; TEXT-DECORATION: none !important
+}
+.qmbox .link:visited {
+	COLOR: #2672ec !important; TEXT-DECORATION: none !important
+}
+.qmbox .link:hover {
+	COLOR: #4284ee !important; TEXT-DECORATION: none !important
+}
+</style>
+
+<table dir="ltr">
+  <tbody>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #707070; FONT-SIZE: 17px; PADDING-TOP: 0px" id="i1">$!{company} 帐户</td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2672ec; FONT-SIZE: 41px; PADDING-TOP: 0px" id="i2">验证你的电子邮件地址</td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 25px" id="i4">要完成此 $!{company} 帐户的设置，我们只需确保这是你的电子邮件地址。</td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 25px">
+      <table border="0" cellspacing="0">
+        <tbody>
+        <tr>
+          <td style="MIN-WIDTH: 50px; PADDING-BOTTOM: 5px; BACKGROUND-COLOR: #2672ec; PADDING-LEFT: 20px; PADDING-RIGHT: 20px; PADDING-TOP: 5px" bgcolor="#2672ec"><a style="TEXT-ALIGN: center; LETTER-SPACING: 0.02em; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #fff; FONT-SIZE: 14px; FONT-WEIGHT: 600; TEXT-DECORATION: none" id="i5" href="$!{validationUrl}" target="_blank">验证 
+            <span dir="ltr">$!{userMail}</span></a></td></tr></tbody></table></td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 25px" id="i6">如果你的程序不支持链接点击，请复制链接到浏览器地址栏访问:  <a style="COLOR: #2672ec; TEXT-DECORATION: none" id="iCancel" class="link" href="$!{validationUrl}" target="_blank">$!{validationUrl}</a></td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 25px">如果你没有请求验证该邮箱，请忽略这封邮件</td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 25px">谢谢!</td></tr>
+  <tr>
+    <td style="PADDING-BOTTOM: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; FONT-FAMILY: 'Microsoft Yahei', Verdana, Simsun, sans-serif; COLOR: #2a2a2a; FONT-SIZE: 14px; PADDING-TOP: 0px" id="i8">$!{company} 帐户团队</td></tr></tbody></table></div></div>
+</body>
+</html>

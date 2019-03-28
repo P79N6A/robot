@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.org.OrgMapper">
+	  	
+	 <select id="getOrgById" resultType="com.bossbutler.pojo.OrgModel">
+		SELECT org_id orgId,org_code orgCode, duty_type dutyType from org where org_id =#{orgId}
+	</select>
+	 
+	 <select id="getOrgByAccId" resultType="com.bossbutler.pojo.OrgModel">
+		SELECT
+			c.org_id as orgId,
+			c.org_name as orgName
+		FROM
+			emp a
+		JOIN org b ON a.org_id = b.org_id
+		JOIN org c ON b.supper_id = c.org_id
+		WHERE
+			a.account_id =#{accountId}
+			AND a.status_code = '01' 
+	</select>
+	
+	<select id="getOrgByAccIdAndPId" resultType="com.bossbutler.pojo.OrgModel">
+		SELECT
+			a.org_id as orgId
+		FROM
+			emp a
+		join emp_project_relation b
+			on a.emp_id=b.emp_id
+		WHERE
+			a.account_id =#{accountId}
+			AND a.status_code = '01' 
+			and b.project_id=#{projectId}
+	</select>
+	
+	<select id="getOrgByRId" resultType="com.bossbutler.pojo.OrgModel">
+		select 
+			org_id as orgId
+		from org_resource_relation
+		where resource_id=#{resourceId}
+		LIMIT 1
+	</select>
+	 
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<description>curator整合分布式锁</description>
+	<!--ZK重试策略 -->
+	<bean id="retryPolicy" class="org.apache.curator.retry.RetryNTimes">
+		<!--重试次数 -->
+		<constructor-arg index="0" value="29" />
+		<!--每次间隔ms -->
+		<constructor-arg index="1" value="1000" />
+	</bean>
+
+	<!--ZK客户端 -->
+	<bean id="curatorClient" class="org.apache.curator.framework.CuratorFrameworkFactory"
+		factory-method="newClient" init-method="start">
+		<!--ZK服务地址，集群使用逗号分隔 -->
+		<constructor-arg index="0" value="${zookeeper.address.array}" />
+		<!--session timeout会话超时时间 -->
+		<constructor-arg index="1" value="10000" />
+		<!--ConnectionTimeoutMs创建连接超时时间 -->
+		<constructor-arg index="2" value="5000" />
+		<!--重试策略 -->
+		<constructor-arg index="3" ref="retryPolicy" />
+	</bean>
+
+	<!--扩展注入ZK工具 -->
+	<!-- <bean id="zkCuratorService" class="com.bossbutler.common.ZkCuratorService"
+		init-method="init" destroy-method="destroy">
+		<constructor-arg index="0" ref="curatorClient" />
+		<constructor-arg index="1" value="appServer" />
+		<constructor-arg index="2" value="${host.port}" />
+	</bean> -->
+</beans>

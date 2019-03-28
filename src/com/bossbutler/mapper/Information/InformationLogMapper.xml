@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.bossbutler.mapper.Information.InformationLogMapper">
+  <resultMap id="BaseResultMap" type="com.bossbutler.pojo.Information.InformationLog" >
+    <id column="log_id" property="logId" jdbcType="BIGINT" />
+    <result column="info_id" property="infoId" jdbcType="BIGINT" />
+    <result column="account_id" property="accountId" jdbcType="BIGINT" />
+    <result column="status_code" property="statusCode" jdbcType="CHAR" />
+    <result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+    <result column="status_remark" property="statusRemark" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+  </resultMap>
+	<insert id="insert">
+    <![CDATA[
+        INSERT INTO information_log (
+        	log_id,
+        	info_id,
+        	account_id,
+			status_code,
+			status_time,
+			status_remark,
+			create_time,
+			update_time,
+			operator_id
+        ) VALUES (
+        	#{model.logId},
+        	#{model.infoId},
+			#{model.accountId},
+			#{model.statusCode},
+			sysdate(),
+			#{model.statusRemark},
+			sysdate(),
+			sysdate(),
+			#{model.operatorId}
+        )
+    ]]>
+	</insert>
+	<select id="queryByInfoIdAndAccountId" resultMap="BaseResultMap"
+		parameterType="hashmap">
+		select
+		*
+		from information_log i where i.info_id =#{infoId} and i.account_id = #{accountId}
+	</select>
+</mapper>

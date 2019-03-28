@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.bill.ServiceBillMapper" >
+  <resultMap id="ServiceBillM" type="com.bossbutler.pojo.bill.ServiceBill" >
+    <id column="bill_id" property="billId" jdbcType="BIGINT" />
+    <result column="bill_code" property="billCode" jdbcType="INTEGER" />
+    <result column="account_id" property="accountId" jdbcType="BIGINT" />
+    <result column="project_id" property="projectId" jdbcType="BIGINT" />
+    <result column="bill_type" property="billType" jdbcType="CHAR" />
+    <result column="bill_title" property="billTitle" jdbcType="VARCHAR" />
+    <result column="bill_desc" property="billDesc" jdbcType="VARCHAR" />
+    <result column="bill_address" property="billAddress" jdbcType="VARCHAR" />
+    <result column="expect_type" property="expectType" jdbcType="CHAR" />
+    <result column="expect_begin" property="expectBegin" jdbcType="TIMESTAMP" />
+    <result column="expect_end" property="expectEnd" jdbcType="TIMESTAMP" />
+    <result column="link_man" property="linkMan" jdbcType="VARCHAR" />
+    <result column="link_phone" property="linkPhone" jdbcType="VARCHAR" />
+    <result column="status_code" property="statusCode" jdbcType="CHAR" />
+    <result column="status_time" property="statusTime" jdbcType="TIMESTAMP" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+    <result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="BillHomeM" type="com.bossbutler.pojo.bill.BillHome" >
+    <result column="project_id" property="projectId" jdbcType="BIGINT" />
+    <result column="project_name" property="projectName" jdbcType="VARCHAR" />
+    <result column="wait_count" property="waitCount" jdbcType="BIGINT" />
+    <result column="received_count" property="receivedCount" jdbcType="BIGINT" />
+    <result column="complete_count" property="completeCount" jdbcType="BIGINT" />
+    <result column="p_wait_count" property="pwaitCount" jdbcType="BIGINT" />
+    <result column="p_received_count" property="preceivedCount" jdbcType="BIGINT" />
+    <result column="p_complete_count" property="pcompleteCount" jdbcType="BIGINT" />
+    <result column="pd" property="pd" jdbcType="VARCHAR" />
+    <result column="ck" property="ck" jdbcType="VARCHAR" />
+    <result column="jd" property="jd" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    bill_id, bill_code, account_id, project_id, bill_type, bill_title, bill_desc, bill_address, 
+    expect_type, expect_begin, expect_end, link_man, link_phone, status_code, status_time, 
+    create_time, update_time, operator_id, data_version
+  </sql>
+  <select id="findByPrimaryKey" resultMap="ServiceBillM" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from service_bill
+    where bill_id = #{billId,jdbcType=BIGINT}
+  </select>
+  <select id="queryBillhomeByAccountId" resultMap="BillHomeM" parameterType="java.lang.Long" >
+		select b.project_id,p.project_name,
+		ifnull(wait_count,0) wait_count ,
+		ifnull(received_count,0) received_count,
+		ifnull(complete_count,0) complete_count,
+		ifnull(p_wait_count,0) p_wait_count,
+		ifnull(p_received_count,0) p_received_count,
+		ifnull(p_complete_count,0) p_complete_count,
+		<![CDATA[ 
+		case when b.permissions & 1024 then '1' else '0' end as pd,
+		case when b.permissions & 2048 then '1' else '0' end as jd,
+		case when b.permissions & 4096 then '1' else '0' end as ck
+		]]>
+		from (
+			select 
+			p.project_id,
+			sum( case when p.status_code = '02' or (p.status_code = '04' and p.send_account  = #{accountId})
+			or (p.status_code = '04' and p.assigned_account= #{accountId}) then 1 else 0 end ) as wait_count,
+			sum(case when (p.status_code = '06' and p.receive_account = #{accountId}) then 1 else 0 end) as received_count,
+			sum(case when ((p.status_code = '07' and p.complete_account = #{accountId})
+				or (p.status_code = '08' and p.complete_account = #{accountId}) 
+				)
+			then 1 else 0 end) as complete_count,
+			sum( case when p.status_code = '02'or p.status_code = '04' then 1 else 0 end ) p_wait_count,
+			sum( case when p.status_code = '06' then 1 else 0 end ) p_received_count,
+			sum( case when p.status_code = '07' or p.status_code = '08' then 1 else 0 end ) p_complete_count
+			from (
+				select s.bill_id,s.project_id,s.account_id,s.status_code,send.operator_id send_account,assigned.operator_id assigned_account,
+				receive.operator_id receive_account,complete.operator_id complete_account,evaluate.operator_id evaluate_account,
+				cancel.operator_id cancel_account
+				from service_bill s 
+				left join (				
+					select t.* from (
+						select * from service_progress where status_code = '03' order by create_time desc
+					) t group by t.bill_id
+				) send on send.bill_id = s.bill_id 
+				left join (
+					select t.* from (
+						select * from service_progress where status_code = '04' order by create_time desc
+					) t group by t.bill_id
+				)
+				assigned on assigned.bill_id = s.bill_id 				
+				left join service_progress receive on receive.bill_id = s.bill_id and receive.status_code = '06'
+				left join service_progress complete on complete.bill_id = s.bill_id and complete.status_code = '07'
+				left join service_progress evaluate on evaluate.bill_id = s.bill_id and evaluate.status_code = '08'
+				left join service_progress cancel on cancel.bill_id = s.bill_id and cancel.status_code = '09'
+				order by s.create_time desc
+			) p 
+			group by p.project_id
+		) t right join project p on t.project_id = p.project_id
+		right join (
+		<![CDATA[ 
+			select * from vi_emp_info e where duty_type = '0301' and e.account_id = #{accountId}
+				and (e.permissions & 1024 or e.permissions & 2048 or e.permissions & 4096)
+		]]>			
+		) b on p.project_id = b.project_id
+  </select>
+  <insert id="insert" parameterType="com.bossbutler.pojo.bill.ServiceBill" >
+    insert into service_bill
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="billId != null" >
+        bill_id,
+      </if>
+      <if test="billCode != null" >
+        bill_code,
+      </if>
+      <if test="accountId != null" >
+        account_id,
+      </if>
+      <if test="projectId != null" >
+        project_id,
+      </if>
+      <if test="billType != null" >
+        bill_type,
+      </if>
+      <if test="billTitle != null" >
+        bill_title,
+      </if>
+      <if test="billDesc != null" >
+        bill_desc,
+      </if>
+      <if test="billAddress != null" >
+        bill_address,
+      </if>
+      <if test="expectType != null" >
+        expect_type,
+      </if>
+      <if test="expectBegin != null" >
+        expect_begin,
+      </if>
+      <if test="expectEnd != null" >
+        expect_end,
+      </if>
+      <if test="linkMan != null" >
+        link_man,
+      </if>
+      <if test="linkPhone != null" >
+        link_phone,
+      </if>
+      <if test="statusCode != null" >
+        status_code,
+      </if>
+      <if test="statusTime != null" >
+        status_time,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="operatorId != null" >
+        operator_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="billId != null" >
+        #{billId,jdbcType=BIGINT},
+      </if>
+      <if test="billCode != null" >
+        #{billCode,jdbcType=INTEGER},
+      </if>
+      <if test="accountId != null" >
+        #{accountId,jdbcType=BIGINT},
+      </if>
+      <if test="projectId != null" >
+        #{projectId,jdbcType=BIGINT},
+      </if>
+      <if test="billType != null" >
+        #{billType,jdbcType=CHAR},
+      </if>
+      <if test="billTitle != null" >
+        #{billTitle,jdbcType=VARCHAR},
+      </if>
+      <if test="billDesc != null" >
+        #{billDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="billAddress != null" >
+        #{billAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="expectType != null" >
+        #{expectType,jdbcType=CHAR},
+      </if>
+      <if test="expectBegin != null" >
+        #{expectBegin,jdbcType=TIMESTAMP},
+      </if>
+      <if test="expectEnd != null" >
+        #{expectEnd,jdbcType=TIMESTAMP},
+      </if>
+      <if test="linkMan != null" >
+        #{linkMan,jdbcType=VARCHAR},
+      </if>
+      <if test="linkPhone != null" >
+        #{linkPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="statusCode != null" >
+        #{statusCode,jdbcType=CHAR},
+      </if>
+      <if test="statusTime != null" >
+        #{statusTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="operatorId != null" >
+        #{operatorId,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="update" parameterType="com.bossbutler.pojo.bill.ServiceBill" >
+    update service_bill
+    <set >
+      <if test="billCode != null" >
+        bill_code = #{billCode,jdbcType=INTEGER},
+      </if>
+      <if test="accountId != null" >
+        account_id = #{accountId,jdbcType=BIGINT},
+      </if>
+      <if test="projectId != null" >
+        project_id = #{projectId,jdbcType=BIGINT},
+      </if>
+      <if test="billType != null" >
+        bill_type = #{billType,jdbcType=CHAR},
+      </if>
+      <if test="billTitle != null" >
+        bill_title = #{billTitle,jdbcType=VARCHAR},
+      </if>
+      <if test="billDesc != null" >
+        bill_desc = #{billDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="billAddress != null" >
+        bill_address = #{billAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="expectType != null" >
+        expect_type = #{expectType,jdbcType=CHAR},
+      </if>
+      <if test="expectBegin != null" >
+        expect_begin = #{expectBegin,jdbcType=TIMESTAMP},
+      </if>
+      <if test="expectEnd != null" >
+        expect_end = #{expectEnd,jdbcType=TIMESTAMP},
+      </if>
+      <if test="linkMan != null" >
+        link_man = #{linkMan,jdbcType=VARCHAR},
+      </if>
+      <if test="linkPhone != null" >
+        link_phone = #{linkPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="statusCode != null" >
+        status_code = #{statusCode,jdbcType=CHAR},
+      </if>
+      <if test="statusTime != null" >
+        status_time = #{statusTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="operatorId != null" >
+        operator_id = #{operatorId,jdbcType=BIGINT},
+      </if>
+    </set>
+   		where bill_id = #{billId}
+  </update>
+  	<select id="queryHmBillPageList" resultType="hmServerBill">
+	select a.bill_id AS serverId, a.status_code as statusCode, a.bill_title AS tittle, 
+	a.bill_address as address,a.bill_code as servercode,
+	case when a.status_code = '07' then 
+	(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id where t.bill_id=a.bill_id and t.status_code='07') 
+	when a.status_code = '10' then 
+	(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id where t.bill_id=a.bill_id and t.status_code='10') 
+	when (a.status_code='02') then a.link_man
+	when (a.status_code='03') then
+	(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+		where(t.status_code='03') and a.bill_id= a.bill_id) 
+	when (a.status_code='04') then
+	(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+		where(t.status_code='04') and a.bill_id= a.bill_id) 
+	else(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+		where (t.status_code='06') and t.bill_id= a.bill_id) end as name,
+	case 
+		when a.status_code = '02' then a.create_time
+		when a.status_code = '03' then a.assigned_time
+		when a.status_code = '04' then a.send_time
+		when a.status_code = '06' then a.receive_time
+		when (a.status_code = '07' or  a.status_code = '08' ) then a.complete_time
+		when a.status_code = '09' then a.cancel_time
+		when a.status_code = '10' then a.rejected_time
+	end as monadtime,
+	case
+	  when a.bill_type = '01' then '工程类'
+	  when a.bill_type = '02' then '保安类'
+	  when a.bill_type = '03' then '保洁类'
+	  when a.bill_type = '04' then '客服类'
+	  when a.bill_type = '05' then '其他类'
+	end as monadrype,
+	case 
+		when a.status_code = '02' then '待接单'
+		when a.status_code = '04' then '已指派'
+		when a.status_code = '06' then '已接单'	
+		when a.status_code = '07' then '待评价'
+		when a.status_code = '08' then '已评价'
+		when a.status_code = '10' then '已退回'
+	end as type,
+	<if test="accountId != '' and accountId != null">
+		case when 
+		(select count(1) from service_progress sp where sp.bill_id = a.bill_id 
+			and sp.status_code = '03' and sp.operator_id = #{accountId}  )
+		then 1 else 0  end as isSend,
+	</if>
+	<![CDATA[ 
+	case when b.permissions & 1024 then '1' else '0' end as pd,
+	case when b.permissions & 2048 then '1' else '0' end as jd,
+	case when b.permissions & 4096 then '1' else '0' end as ck,
+	a.send_account as pdAccountId
+	]]>
+	from (	
+			select s.*,send.operator_id send_account,send.create_time send_time,
+				assigned.operator_id assigned_account,assigned.create_time assigned_time,
+				receive.operator_id receive_account,receive.create_time receive_time,
+				complete.operator_id complete_account,complete.create_time complete_time,
+				evaluate.operator_id evaluate_account,evaluate.create_time evaluate_time,
+				cancel.operator_id cancel_account,cancel.create_time cancel_time,
+				rejected.operator_id rejected_account,rejected.create_time rejected_time
+			from service_bill s 
+				left join (
+					select t.*   from (
+						select * from service_progress where status_code = '03' order by create_time desc
+					) t group by t.bill_id
+				) 
+				send on send.bill_id = s.bill_id
+				left join (
+					select t.*  from (
+						select * from service_progress where status_code = '04' order by create_time desc
+					) t group by t.bill_id
+				)
+				assigned on assigned.bill_id = s.bill_id 
+				left join service_progress receive on receive.bill_id = s.bill_id and receive.status_code = '06'
+				left join service_progress complete on complete.bill_id = s.bill_id and complete.status_code = '07'
+				left join service_progress evaluate on evaluate.bill_id = s.bill_id and evaluate.status_code = '08'
+				left join service_progress cancel on cancel.bill_id = s.bill_id and cancel.status_code = '09'
+				left join service_progress rejected on rejected.bill_id = s.bill_id and rejected.status_code = '10'
+			where s.project_id = #{projectId}
+		<if test="billtype != null and billtype != '' ">
+			and s.bill_type = #{billtype}
+		</if>
+		<if test="type==1">
+			and (s.status_code = '02' or (s.status_code = '04' 
+			<if test="isAdmin != 1">
+				and (assigned.operator_id = #{accountId} or send.operator_id = #{accountId} )
+			</if>
+			) )
+		</if>
+		<if test="type==2">
+			and s.status_code = '06' 
+			<if test="isAdmin != 1">
+				and receive.operator_id = #{accountId}
+			</if>
+		</if>
+		<if test="type==3">
+ 			<if test="isAdmin != 1">
+				and (complete.operator_id = #{accountId} or rejected.operator_id = #{accountId} ) 
+			</if>
+			 and (s.status_code = '07'
+			 or s.status_code = '08' or s.status_code = '10')
+		</if>
+			order by s.create_time desc
+	) a ,(
+	<![CDATA[ 
+		SELECT
+					sum(e.permission_code) AS permissions
+				FROM
+					emp_project_relation a
+				JOIN emp b ON a.emp_id = b.emp_id
+				JOIN org c ON b.org_id = c.org_id
+				JOIN role d ON a.roles & d.role_code > 0
+					AND d.org_id = b.org_id
+				JOIN permission e ON d.permissions & e.permission_code > 0
+				WHERE
+					a.project_id = #{projectId}
+					AND b.account_id = #{accountId}
+					AND c.duty_type = '0301'
+					AND d.app_id = "002"
+					AND e.app_id = "002"
+					AND (
+						e.permission_code = '1024'
+						OR e.permission_code = '2048'
+						OR e.permission_code = '4096'
+					)
+	]]>
+		<!-- select * from vi_emp_info e where duty_type = '0301' and e.account_id =  #{accountId}
+			and e.project_id = #{projectId}
+			and (e.permissions & 1024 or e.permissions & 2048 or e.permissions & 4096) -->
+				
+	) b
+	
+	order by monadtime desc
+	</select>
+	
+	<select id="queryIbBillPageList" resultType="ibServerBill" parameterType="String">
+		select a.account_id as accountId, a.bill_id as serverId,a.bill_code as servercode,a.bill_title as tittle,a.bill_desc as content
+		,a.create_time as monadtime,a.bill_address as address, a.status_code as statusCode,
+		case when a.status_code = '07' then 
+		(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id where t.bill_id=a.bill_id and t.status_code='07') 
+		when (a.status_code='02') then a.link_man
+		when (a.status_code='03') then
+		(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+			where(t.status_code='03') and a.bill_id= a.bill_id) 
+		when (a.status_code='04') then
+		(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+			where(t.status_code='04') and a.bill_id= a.bill_id) 
+		when (a.status_code='10') then
+		(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+			where(t.status_code='10') and a.bill_id= a.bill_id) 
+		else(select max(e.emp_name) from service_progress t join emp e on t.operator_id=e.account_id 
+		where (t.status_code='06') and t.bill_id= a.bill_id) end as name,
+		case when a.bill_type='01' then '工程类'
+		when a.bill_type='02' then '保安类'
+		when a.bill_type='03' then '保洁类'
+		when a.bill_type='04' then '客服类'
+		when a.bill_type='05' then '其他'
+		end as monadrype,
+		case when a.status_code='02' then '待接单'
+		when a.status_code='04' then '待接单'
+		when a.status_code='06' then '已接单'
+		when a.status_code='07' then '待评价'
+		when a.status_code='08' then '已评价'
+		when a.status_code='09' then '已取消'
+		when a.status_code='10' then '已退回'
+		end as type,		
+		case when a.status_code='08' then '已评价' end as comments
+		from service_bill a 
+		where  a.account_id=#{accountId}
+		<if test="type==1">
+			and (a.status_code='02' or a.status_code='03' or a.status_code='04')
+		</if>
+		<if test="type==2">
+			and a.status_code='06'
+		</if>
+		<if test="type==3">
+			and (a.status_code='07' or a.status_code='08' or a.status_code='09' or a.status_code='10')
+		</if>
+		<if test="type==4">
+			and a.status_code='09'
+		</if>
+		order by a.create_time desc
+	</select>
+	<select id="findProjectIsAdminByAccountId" resultType="String" parameterType="String">
+	<![CDATA[ 
+		select case when count(1)>0 then '1' else '0' end s from vi_emp_info e where duty_type = '0301' and e.account_id = 200001
+			and e.project_id = 1
+			and e.permissions & 1024 
+	]]>	
+	</select>
+</mapper>

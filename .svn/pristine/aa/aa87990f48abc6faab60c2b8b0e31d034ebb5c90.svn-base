@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<!-- 扫描注解service and mapper组件并且自动的注入spring beans中. -->
+	<context:component-scan base-package="com.bossbutler.service" />
+	<!-- restful 访问引擎 -->
+	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate" >
+		<property name="interceptors">
+			<list>
+				 <bean class="com.bossbutler.common.RestTrackInterceptor"/>
+			</list>
+		</property>
+	</bean>
+	<!-- 用于持有ApplicationContext,可以使用SpringContextHolder.getBean('xxxx')的静态方法得到spring 
+		bean对象 -->
+	<bean class="com.bossbutler.common.SpringContextHolder" lazy-init="false" />
+	<!-- 引入velocity -->
+	<bean id="velocityEngine"
+		class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+		<property name="velocityProperties">
+			<value>
+				resource.loader=class
+				class.resource.loader.class=org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+			</value>
+		</property>
+	</bean>
+	<!-- 引入配置文件 -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="locations">
+			<list>
+				<value>classpath*:jdbc.properties</value>
+				<value>classpath*:initconf.properties</value>
+				<value>classpath*:jms.properties</value>
+				<!-- <value>classpath*:zookeeper.properties</value> -->
+			</list>
+		</property>
+	</bean>
+	<!-- 初始化系统信息 -->
+	<bean id="initConf" class="com.bossbutler.common.InitConf">
+		<property name="selfhost" value="${file.selfhost}" />
+		<property name="selftmpsavepath" value="${file.selftmpsavepath}" />
+		<property name="selfimgpath" value="${file.selfimgpath}" />
+		<property name="selfvisitorapplypath" value="${file.selfvisitorapplypath}" />
+		<property name="filesystemhost" value="${file.filesystemhost}" />
+		<property name="fmuploadtmppath" value="${file.fmuploadtmppath}" />
+		<property name="fmuploadtmp2filepath" value="${file.fmuploadtmp2filepath}" />
+		<property name="fmloadpath" value="${file.fmloadpath}" />
+		<property name="fmuploadpath" value="${file.fmuploadpath}" />
+		<property name="dahaoSupplierNameMult" value="${dahao.supplier.name.mult}" />
+		<property name="rodoorTimeoutseconds" value="${remoteopendoor.timeoutseconds}" />
+		<property name="rodoorResendlimit" value="${remoteopendoor.resendlimit}" />
+		<property name="rodoorOpenseconds" value="${remoteopendoor.openseconds}" />
+		<property name="idworkDistrictField" value="${idwork.district.field}" />
+		<property name="idworkStationField" value="${idwork.station.field}" />
+		<property name="appLocationFlag" value="${app.location.flag}" />
+		<property name="appLocationOffset" value="${app.location.offset}" />
+		<property name="msgMqpmHost" value="${msg.mqpm.host}" />
+		<property name="appUpgradeLog" value="${app.upgrade.log}" />
+		<property name="msgMqpmHostRestTransitToken" value="${msg.mqpm.host.rest.transit.token}" />
+	</bean>
+
+	<!-- 配置多个数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<!-- 基本属性 url、user、password -->
+		<property name="url" value="${jdbc_url}" />
+		<property name="username" value="${jdbc_username}" />
+		<property name="password" value="${jdbc_password}" />
+
+		<!-- 配置初始化大小、最小、最大 -->
+		<property name="initialSize" value="${jdbc_initialSize}" />
+		<property name="minIdle" value="${jdbc_minIdle}" />
+		<property name="maxActive" value="${jdbc_maxActive}" />
+		<!-- 配置获取连接等待超时的时间 -->
+		<property name="maxWait" value="${jdbc_maxWait}" />
+
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${jdbc_timeBetweenEvictionRunsMillis}" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${jdbc_minEvictableIdleTimeMillis}" />
+		<property name="validationQuery" value="${jdbc_validationQuery}" />
+		<property name="testWhileIdle" value="${jdbc_testWhileIdle}" />
+		<property name="testOnBorrow" value="${jdbc_testOnBorrow}" />
+		<property name="testOnReturn" value="${jdbc_testOnReturn}" />
+		<!-- 打开removeAbandoned功能 -->
+		<property name="removeAbandoned" value="${jdbc_removeAbandoned}" />
+		<!-- 1800秒，也就是30分钟 -->
+		<property name="removeAbandonedTimeout" value="${jdbc_removeAbandonedTimeout}" />
+		<!-- 关闭abanded连接时输出错误日志 -->
+		<property name="logAbandoned" value="${jdbc_logAbandoned}" />
+		<!-- 配置监控统计拦截的filters -->
+		<property name="filters" value="${jdbc_filters}" />
+		<property name="connectionProperties" value="config.decrypt=true" />
+	</bean>
+	<!-- 配置事务 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 加入Transaction驱动 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<!-- mybatis配置 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 自动扫描mapping.xml文件 -->
+		<property name="configLocation" value="/WEB-INF/mybatis-config.xml" />
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+		<property name="basePackage" value="com.bossbutler.mapper" />
+	</bean>
+	<!-- 事务通知 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="query*" propagation="NOT_SUPPORTED"
+				read-only="true" />
+			<tx:method name="get*" propagation="NOT_SUPPORTED"
+				read-only="true" />
+			<tx:method name="search*" propagation="NOT_SUPPORTED"
+				read-only="true" />
+			<tx:method name="save*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="update*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="delete*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="getNoGeneratorByUsedCat" propagation="REQUIRES_NEW" rollback-for="Exception" />
+		</tx:attributes>
+	</tx:advice>
+	<!-- aop代理设置 -->
+	<aop:config proxy-target-class="true">
+		<aop:pointcut id="txPointcut"
+			expression="execution(* com.bossbutler.service..*Service.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"
+			order="1" />
+	</aop:config>
+	<!-- spring系统启动以后，会先加载该类 -->
+	<bean class="com.bossbutler.common.InitDataListener" ></bean>
+<!-- 	<import resource="spring-zk.xml"/>
+ --></beans>

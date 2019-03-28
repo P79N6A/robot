@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.image.ImageMapper">
+	<resultMap id="AccountMediaM" type="com.bossbutler.pojo.system.AccountMedia">
+		<id column="media_id" property="mediaId" jdbcType="VARCHAR" />
+		<result column="account_id" property="accountId" jdbcType="BIGINT" />
+		<result column="ordinal" property="ordinal" jdbcType="INTEGER" />
+		<result column="main_classify" property="mainClassify" jdbcType="CHAR" />
+		<result column="media_type" property="mediaType" jdbcType="CHAR" />
+		<result column="file_type" property="fileType" jdbcType="VARCHAR" />
+		<result column="media_no" property="mediaNo" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+		<result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<resultMap id="BillMediaM" type="com.bossbutler.pojo.bill.BillMedia">
+		<id column="media_id" property="mediaId" jdbcType="VARCHAR" />
+		<result column="account_id" property="accountId" jdbcType="BIGINT" />
+		<result column="ordinal" property="ordinal" jdbcType="INTEGER" />
+		<result column="main_classify" property="mainClassify" jdbcType="CHAR" />
+		<result column="media_type" property="mediaType" jdbcType="CHAR" />
+		<result column="file_type" property="fileType" jdbcType="VARCHAR" />
+		<result column="media_no" property="mediaNo" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+		<result column="data_version" property="dataVersion" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="media_column_list">
+		media_id, account_id, ordinal, main_classify, media_type, file_type, media_no,
+		create_time,
+		update_time, operator_id, data_version
+	</sql>
+	<sql id="bill_media_column_list">
+		media_id, bill_id, ordinal, main_classify, media_type, file_type, media_no,
+		create_time,
+		update_time, operator_id, data_version
+	</sql>
+  	<select id="findMediaByAccountId" resultMap="AccountMediaM" parameterType="string" >
+	    select
+	    <include refid="media_column_list" />
+	    from account_media m where m.account_id = #{accountId}
+	    and m.main_classify = #{mainClassify} and m.media_type = #{mediaType}
+	    and ordinal =(select max(ordinal) from account_media a where a.account_id = #{accountId})
+    </select>
+  	<select id="findMediaByBillId" resultMap="BillMediaM" parameterType="string" >
+	    select
+	    <include refid="bill_media_column_list" />
+	    from service_media m where m.bill_id = #{billId}
+	    and m.main_classify = #{mainClassify} and m.media_type = #{mediaType}
+    </select>
+	<insert id="insertmedia">
+		insert into account_media(
+		media_id,
+		account_id,
+		ordinal,
+		main_classify,
+		media_type,
+		file_type,
+		create_time
+		) values(
+		#{mediaId},
+		#{accountId},
+		#{ordinal},
+		#{mainClassify},
+		#{mediaType},
+		#{fileType},
+		#{createtime}
+		)
+	</insert>
+	<select id="queryordinal" resultType="imagepojo">
+		select ifnull(max(ordinal),0)+1 as
+		ordinal from account_media where
+		main_classify=#{mainClassify} and
+		media_type=#{mediaType}
+	</select>
+
+</mapper>

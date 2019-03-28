@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.bossbutler.mapper.complaint.ComplaintMapper">
+	<resultMap id="Complaint" type="com.bossbutler.pojo.complaint.ComplaintModel">
+		<result property="complaintId" column="complaint_id" />
+		<result property="complaintCode" column="complaint_code" />
+		<result property="infoType" column="info_type" />
+		<result property="accountId" column="account_id" />
+		<result property="orgId" column="org_id" />
+		<result property="infoTitle" column="info_title" />
+		<result property="contents" column="contents" />
+		<result property="inscribe" column="inscribe" />
+		<result property="statusCode" column="status_code" />
+		<result property="statusTime" column="status_time" />
+		<result property="createTime" column="create_time" />
+		<result property="updateTime" column="update_time" />
+		<result property="operatorId" column="operator_id" />
+		<result property="loginName" column="login_name" />
+	</resultMap>
+	<resultMap id="complaintOut" type="com.bossbutler.pojo.complaint.ComplaintOut">
+		<result property="complaintId" column="complaint_id" />
+		<result property="complaintCode" column="complaint_code" />
+		<result property="infoType" column="info_type" />
+		<result property="infoTypeName" column="info_type_name" />
+		<result property="accountId" column="account_id" />
+		<result property="orgId" column="org_id" />
+		<result property="orgName" column="org_name" />
+		<result property="infoTitle" column="info_title" />
+		<result property="contents" column="contents" />
+		<result property="status" column="status" />
+		<result property="statusCode" column="status_code" />
+		<result property="createUser" column="create_user" />
+		<result property="createTime" column="create_time" />
+		<result property="readUser" column="read_user" />
+		<result property="readTime" column="read_time" />
+		<result property="replyUser" column="reply_user" />
+		<result property="replyContents" column="reply_contents" />
+		<result property="replyTime" column="reply_time" />
+		<result property="resolveUser" column="resolve_user" />
+		<result property="resolveTime" column="resolve_time" />
+	</resultMap>
+
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="ComplaintColumns">
+	    <![CDATA[
+        	complaint_id,
+        	complaint_code,
+        	info_type,
+        	account_id,
+        	org_id,
+        	info_title,
+        	contents,
+        	inscribe,
+        	status_code,
+        	status_time,
+        	create_time,
+        	update_time,
+        	operator_id
+	    ]]>
+	</sql>
+	<select id="getPageList" resultMap="Complaint"
+		parameterType="com.bossbutler.pojo.complaint.ComplaintModel">
+		SELECT c.*,cd.create_time replayTime FROM complaint c
+		LEFT JOIN
+		complaint_dispose cd on cd.complaint_id=c.complaint_id
+		<where>
+			<if test="true">
+				<if test="ComplaintModel.statusCode=='04'">
+					c.status_code=#{ComplaintModel.statusCode}
+				</if>
+				<if test="ComplaintModel.statusCode!='04'">
+					c.status_code in ('01','02','03')
+				</if>
+				<if test="ComplaintModel.operatorId!=null">
+					and (c.operator_id=#{ComplaintModel.operatorId} or
+					cd.operator_id=#{ComplaintModel.operatorId})
+				</if>
+			</if>
+			<if test="ComplaintModel.searchFlag==1 or ComplaintModel.searchFlag==2">
+				<if
+					test="ComplaintModel.createBeginTime!=null and ComplaintModel.createBeginTime!='' ">
+					and c.create_time &gt;=#{ComplaintModel.createBeginTime}
+				</if>
+				<if
+					test="ComplaintModel.endBeginTime !=null and ComplaintModel.endBeginTime !='' ">
+					and c.create_time &lt;=#{ComplaintModel.endBeginTime}
+				</if>
+			</if>
+			<if test="ComplaintModel.searchFlag==2 and ComplaintModel.searchFlag!=1">
+				<if
+					test="ComplaintModel.startTime!=null and ComplaintModel.startTime!=''">
+					and c.status_time &gt;=#{ComplaintModel.startTime}
+				</if>
+				<if test="ComplaintModel.endTime!=null and ComplaintModel.endTime!=''">
+					and c.status_time &lt;=#{ComplaintModel.endTime}
+				</if>
+			</if>
+			<if test="ComplaintModel.searchFlag==0">
+				<if
+					test="ComplaintModel.infoTitle!=null and ComplaintModel.infoTitle!=''">
+					and info_title like
+					CONCAT('%',#{ComplaintModel.infoTitle},'%')
+				</if>
+			</if>
+		</where>
+	</select>
+	<select id="queryPageList" resultMap="complaintOut"
+		parameterType="com.bossbutler.pojo.complaint.ComplaintIn">
+			select t.complaint_id,complaint_code, info_type,t.contents ,o.org_name,
+			case when t.info_type = '01' then '投诉' 
+			when t.info_type = '02' then '建议' end info_type_name,
+			case when t.status_code = '01' or t.status_code = '02' then '处理中'
+			when t.status_code = '03' then '已阅读'
+			when t.status_code = '04' then '已处理'
+			when t.status_code = '05' then '已处理' end status ,
+			t.status_code statusCode,
+			date_format(t.create_time,'%Y-%m-%d %H:%i') create_time,
+			(select max(emp_name) from emp where account_id = t.account_id) create_user,
+			date_format(r.create_time,'%Y-%m-%d %H:%i') read_time,
+			(select max(emp_name) from emp where account_id = r.operator_id) read_user,
+			date_format(reply.create_time,'%Y-%m-%d %H:%i') reply_time,
+			(select max(emp_name) from emp where account_id = reply.operator_id) reply_user,
+			date_format(resolve.create_time,'%Y-%m-%d %H:%i') resolve_time,
+			(select max(emp_name) from emp where account_id = resolve.operator_id) resolve_user
+			from complaint t 
+			left join org o on t.org_id = o.org_id
+			left join complaint_dispose r  on t.complaint_id = r.complaint_id and r.status_code = '01'
+			left join complaint_dispose reply on t.complaint_id =  reply.complaint_id and reply.status_code = '02'
+			left join complaint_dispose resolve on t.complaint_id =  resolve.complaint_id and resolve.status_code = '03'
+		<where>
+			<if test="infoType!=null and infoType!='' ">
+				and t.info_type =#{infoType}
+			</if>
+			<if test="accountId !=null and accountId !='' ">
+				and t.account_id =#{accountId}
+			</if>
+			<if test="orgId !=null and orgId !='' ">
+				and t.org_id in (${orgId})
+			</if>
+		</where>
+	</select>
+	<select id="queryHmPageList" resultMap="complaintOut"
+		parameterType="com.bossbutler.pojo.complaint.ComplaintIn">
+			select t.complaint_id,complaint_code, info_type,t.contents ,
+			(select real_org_name from vi_emp_info v where v.account_id = t.account_id limit 1) org_name,
+			case when t.info_type = '01' then '投诉' 
+			when t.info_type = '02' then '建议' end info_type_name,
+			case when t.status_code = '01' or t.status_code = '02' then '待回复'
+			when t.status_code = '03' then '已阅读'
+			when t.status_code = '04' then '已回复'
+			when t.status_code = '05' then '已回复' end status ,
+			t.status_code statusCode,
+			date_format(t.create_time,'%Y-%m-%d %H:%i') create_time,
+			(select max(emp_name) from emp where account_id = t.account_id) create_user,
+			date_format(r.create_time,'%Y-%m-%d %H:%i') read_time,
+			(select max(emp_name) from emp where account_id = r.operator_id) read_user,
+			date_format(reply.create_time,'%Y-%m-%d %H:%i') reply_time,
+			(select max(emp_name) from emp where account_id = reply.operator_id) reply_user,
+			date_format(resolve.create_time,'%Y-%m-%d %H:%i') resolve_time,
+			(select max(emp_name) from emp where account_id = resolve.operator_id) resolve_user
+			from complaint t 
+			left join org o on t.org_id = o.org_id
+			left join complaint_dispose r  on t.complaint_id = r.complaint_id and r.status_code = '01'
+			left join complaint_dispose reply on t.complaint_id =  reply.complaint_id and reply.status_code = '02'
+			left join complaint_dispose resolve on t.complaint_id =  resolve.complaint_id and resolve.status_code = '03'
+		<where>
+			<if test="infoType!=null and infoType!='' ">
+				and t.info_type =#{infoType}
+			</if>
+			<if test="accountId !=null and accountId !='' ">
+				and t.account_id =#{accountId}
+			</if>
+			<if test="orgId !=null and orgId !='' ">
+				and t.org_id in (${orgId})
+			</if>
+		</where>
+	</select>
+	<insert id="insert" useGeneratedKeys="true" keyProperty="complaintId"
+		parameterType="com.bossbutler.pojo.complaint.ComplaintModel">
+		insert into complaint
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="complaintId != null">
+				complaint_id,
+			</if>
+			<if test="complaintCode != null">
+				complaint_code,
+			</if>
+			<if test="infoType != null">
+				info_type,
+			</if>
+			<if test="accountId != null">
+				account_id,
+			</if>
+			<if test="orgId != null">
+				org_id,
+			</if>
+			<if test="infoTitle != null">
+				info_title,
+			</if>
+			<if test="contents != null">
+				contents,
+			</if>
+			<if test="inscribe != null">
+				inscribe,
+			</if>
+			<if test="statusCode != null">
+				status_code,
+			</if>
+			<if test="statusTime != null">
+				status_time,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="operatorId != null">
+				operator_id
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="complaintId != null">
+				#{complaintId,jdbcType=BIGINT},
+			</if>
+			<if test="complaintCode != null">
+				#{complaintCode,jdbcType=INTEGER},
+			</if>
+			<if test="infoType != null">
+				#{infoType,jdbcType=CHAR},
+			</if>
+			<if test="accountId != null">
+				#{accountId,jdbcType=BIGINT},
+			</if>
+			<if test="orgId != null">
+				#{orgId,jdbcType=BIGINT},
+			</if>
+			<if test="infoTitle != null">
+				#{infoTitle,jdbcType=VARCHAR},
+			</if>
+			<if test="contents != null">
+				#{contents,jdbcType=VARCHAR},
+			</if>
+			<if test="inscribe != null">
+				#{inscribe,jdbcType=VARCHAR},
+			</if>
+			<if test="statusCode != null">
+				#{statusCode,jdbcType=CHAR},
+			</if>
+			<if test="statusTime != null">
+				#{statusTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="operatorId != null">
+				#{operatorId,jdbcType=BIGINT}
+			</if>
+		</trim>
+	</insert>
+	<update id="update">
+		UPDATE complaint
+		<trim prefix="set" suffixOverrides=",">
+			<if test="complaintCode!=null">
+				complaint_code = #{complaintCode} ,
+			</if>
+			<if test="infoType!=null">
+				info_type = #{infoType} ,
+			</if>
+			<if test="accountId!=null">
+				account_id = #{accountId} ,
+			</if>
+			<if test="orgId!=null">
+				org_id = #{orgId} ,
+			</if>
+			<if test="infoTitle!=null">
+				info_title = #{infoTitle} ,
+			</if>
+			<if test="contents!=null">
+				contents = #{contents} ,
+			</if>
+			<if test="inscribe!=null">
+				inscribe = #{inscribe} ,
+			</if>
+			<if test="statusCode!=null">
+				status_code = #{statusCode} ,
+			</if>
+			<if test="statusTime!=null">
+				status_time = #{statusTime} ,
+			</if>
+			<if test="createTime!=null">
+				create_time = #{createTime} ,
+			</if>
+			<if test="updateTime!=null">
+				update_time = #{updateTime} ,
+			</if>
+			<if test="operatorId!=null">
+				operator_id = #{operatorId} ,
+			</if>
+		</trim>
+		WHERE
+		complaint_id =#{complaintId}
+	</update>
+
+	<select id="getEntity" resultMap="Complaint">
+		SELECT
+		<include refid="ComplaintColumns" />
+		FROM complaint where complaint_id=#{complaintId}
+	</select>
+
+	<select id="getListByIdList" resultMap="Complaint"
+		parameterType="java.util.List">
+		SELECT
+		<include refid="ComplaintColumns" />
+		FROM complaint where complaint_id
+		in (
+		<foreach collection="list" item="item" separator=","> #{item}
+		</foreach>
+		)
+	</select>
+	<select id="queryManageOrg" resultType="hashMap" parameterType="string">
+<!-- 		select org_id as orgId , org_name as orgName from org  where org_id in ( -->
+			select o.org_id as orgId,s.org_name as orgName from org o left join org s on o.supper_id = s.org_id where o.org_id in ( 
+				select r.org_id from org_project_relation r where r.project_id in(
+					select opr.project_id from org_project_relation opr where opr.org_id in (
+						select org_id from emp e where e.account_id = #{accountId}
+					)
+				)
+			) and o.duty_type = '0301'
+<!-- 		) -->
+	</select>
+	<select id="findIbInfo" resultMap="complaintOut" parameterType="string">
+			select t.complaint_id,complaint_code, info_type,t.contents ,o.org_name,
+			case when t.info_type = '01' then '投诉' 
+			when t.info_type = '02' then '建议' end info_type_name,
+			case when t.status_code = '01' or t.status_code = '02' then '处理中'
+			when t.status_code = '03' then '已阅读'
+			when t.status_code = '04' then '已回复'
+			when t.status_code = '05' then '已解决' end status ,
+			t.status_code statusCode,
+			date_format(t.create_time,'%Y-%m-%d %H:%i') create_time,
+			(select max(emp_name) from emp where account_id = t.account_id) create_user,
+			date_format(r.create_time,'%Y-%m-%d %H:%i') read_time,
+			(select max(emp_name) from emp where account_id = r.operator_id) read_user,
+			date_format(reply.create_time,'%Y-%m-%d %H:%i') reply_time, reply.status_remark reply_contents,
+			(select max(emp_name) from emp where account_id = reply.operator_id) reply_user,
+			date_format(resolve.create_time,'%Y-%m-%d %H:%i') resolve_time,
+			(select max(emp_name) from emp where account_id = resolve.operator_id) resolve_user
+			from complaint t 
+			left join org o on t.org_id = o.org_id
+			left join complaint_dispose r  on t.complaint_id = r.complaint_id and r.status_code = '01'
+			left join complaint_dispose reply on t.complaint_id =  reply.complaint_id and reply.status_code = '02'
+			left join complaint_dispose resolve on t.complaint_id =  resolve.complaint_id and resolve.status_code = '03'
+			where t.complaint_id =#{complaintId}
+	</select>
+	<select id="findHmInfo" resultMap="complaintOut" parameterType="string">
+			select t.complaint_id,complaint_code, info_type,t.contents ,
+			(select real_org_name from vi_emp_info v where v.account_id = t.account_id limit 1) org_name,
+			case when t.info_type = '01' then '投诉' 
+			when t.info_type = '02' then '建议' end info_type_name,
+			case when t.status_code = '01' or t.status_code = '02' then '处理中'
+			when t.status_code = '03' then '已阅读'
+			when t.status_code = '04' then '已回复'
+			when t.status_code = '05' then '已解决' end status ,
+			t.status_code statusCode,
+			date_format(t.create_time,'%Y-%m-%d %H:%i') create_time,
+			(select max(emp_name) from emp where account_id = t.account_id) create_user,
+			date_format(r.create_time,'%Y-%m-%d %H:%i') read_time,
+			(select max(emp_name) from emp where account_id = r.operator_id) read_user,
+			date_format(reply.create_time,'%Y-%m-%d %H:%i') reply_time, reply.status_remark reply_contents,
+			(select max(emp_name) from emp where account_id = reply.operator_id) reply_user,
+			date_format(resolve.create_time,'%Y-%m-%d %H:%i') resolve_time,
+			(select max(emp_name) from emp where account_id = resolve.operator_id) resolve_user
+			from complaint t 
+			left join org o on t.org_id = o.org_id
+			left join complaint_dispose r  on t.complaint_id = r.complaint_id and r.status_code = '01'
+			left join complaint_dispose reply on t.complaint_id =  reply.complaint_id and reply.status_code = '02'
+			left join complaint_dispose resolve on t.complaint_id =  resolve.complaint_id and resolve.status_code = '03'
+			where t.complaint_id =#{complaintId}
+	</select>
+
+</mapper>

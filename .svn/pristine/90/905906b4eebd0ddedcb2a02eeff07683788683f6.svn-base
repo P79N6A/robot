@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.resource.ResourceMapper">
+	<resultMap id="resourceM" type="com.bossbutler.pojo.resource.ResourceModel">
+		<result column="resource_id" property="resourceId"/>
+		<result column="floorage" property="floorage"/>
+		<result column="room_name" property="roomName"/>
+	</resultMap>
+	
+	<select id="queryByConId" resultMap="resourceM">
+		SELECT
+			a.resource_id,
+			c.arrange_name as buildingName,
+			d.arrange_name as floorName,
+			b.room_name,
+			b.floorage
+		FROM
+			resource_storage a
+		join resource b
+			on a.resource_id=b.resource_id
+		left join building c
+			on c.arrange_id=b.building_arrange
+		left join building d
+			on d.arrange_id=b.floor_arrange
+		WHERE
+			contract_id =#{contractId}
+		
+	</select>
+	
+	<select id="getResourceByOrgIds" resultType="com.bossbutler.pojo.resource.ResourceModel">
+		SELECT
+			r.resource_id as resourceId,
+			r.resource_name as resourceName,
+			r.floor_arrange as floorArrange,
+			b.arrange_name as floorName,
+			r.building_arrange buildingArrange,
+			c.arrange_name as buildingName
+		FROM
+			resource r
+		left join org_resource_relation  orr
+			on r.resource_id=orr.resource_id
+		left join building b
+			on r.floor_arrange=b.arrange_id
+		left join building c
+			on r.building_arrange=c.arrange_id
+		<where>
+			<if test="model.projectId !=null and model.projectId>0">
+				r.project_id =#{model.projectId}
+			</if>
+			<if test="model.orgList !=null and model.orgList.size>0">
+				and orr.org_id in(
+				<foreach collection="model.orgList" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
+			</if>
+			
+		and DATE_FORMAT(SYSDATE(),'%Y-%m-%d')  <![CDATA[<= ]]>  orr.end_date and SYSDATE() >=orr.begin_date
+		
+		</where>
+	
+	</select>
+	
+</mapper>

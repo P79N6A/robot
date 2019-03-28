@@ -1,0 +1,15 @@
+{
+	"shouye": "http://app.baobanwang.com/bbwapp/index.html?v=2017041201",
+	"huiwu": "http://app.baobanwang.com/ibaoban/huiwu.html?v=2017041201",
+	"bangong": "http://ibaoban-bgkj.h5release.com/h5/ibaoban-bgkj.html?v=2017041201",
+	"faxian": "http://app.baobanwang.com/ibaoban/faxian.html?v=2017041201",
+	"jieneng": "http://app.baobanwang.com/ibaoban/jieneng.html?v=2017041201",
+	"tousu": "http://app.baobanwang.com/ibaoban/tousu.html?v=2017041201",
+	"zhangdan": "http://app.baobanwang.com/ibaoban/zhangdan.html?v=2017041201",
+	"sbld":"http://app.baobanwang.com/ibaoban/shangbanliandong.html?v=2017050901",
+	"zsyx":"http://app.baobanwang.com/ibaoban/zhaoshangyingxiao.html?v=2017050901",
+	"nygl":"http://app.baobanwang.com/ibaoban/nengyuanguanli.html?v=2017050901",
+	"yygl":"http://app.baobanwang.com/ibaoban/yunyingguanli.html?v=2017050901",
+	"comment":"shouye:首页,huiwu:会务,bangong:办公,faxian:发现,jieneng:节能,tousu:投诉,zhangdan:账单,sbld:商办联动",
+	"comment2":"zsyx:招商营销,nygl:能源管理,yygl:运营管理"
+}

@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.system.AccountMapper">
+	<resultMap id="AccountM" type="com.bossbutler.pojo.system.Account">
+		<result property="accountId" column="account_id" />
+		<result property="accountCode" column="account_code" />
+		<result property="password" column="password" />
+		<result property="mobilephone" column="mobilephone" />
+		<result property="loginId" column="login_id" />
+		<result property="loginName" column="login_name" />
+		<result property="email" column="email" />
+		<result property="roles" column="roles" />
+		<result property="statusCode" column="status_code" />
+		<result property="appId" column="app_id" />
+		<result property="authenum" column="auth_enum" />
+		<result property="loginTime" column="login_time" />
+		<result property="statusTime" column="status_time" />
+		<result property="createTime" column="create_time" />
+		<result property="updateTime" column="update_time" />
+		<result property="operatorId" column="operator_id" />
+		<result property="dataVersion" column="data_version" />
+	</resultMap>
+	<sql id="AccountColumns">
+	    <![CDATA[
+        	account_id,
+        	account_code,
+        	login_id,
+        	gender,
+        	login_name,
+        	mobilephone,
+        	email,     
+        	login_time,
+        	status_code,
+        	status_time,
+        	create_time,
+        	update_time,
+        	operator_id,
+        	data_version      
+	    ]]>
+	</sql>
+	<select id="queryUser" parameterType="hashmap" resultMap="AccountM">
+		select
+		<include refid="AccountColumns" />
+		from Account t where (
+		t.login_id = #{name} or t.account_code = #{name}
+		or t.mobilephone = #{name} )
+		<if test="pwd != null and pwd != '' ">
+			and t.password = #{pwd}
+		</if>
+		and t.status_code !='04'
+	</select>
+	<select id="queryUserQuery" parameterType="hashmap" resultMap="AccountM">
+		select
+		<include refid="AccountColumns" />
+		from Account t where t.mobilephone = #{name} or t.login_id = #{name}
+	</select>
+	<select id="queryUserByPhone" parameterType="hashmap" resultMap="AccountM">
+		select
+		<include refid="AccountColumns" />
+		from Account t where t.mobilephone = #{phone} 
+	</select>
+	
+	<select id="queryUserById" parameterType="hashmap" resultMap="AccountM">
+		select
+		<include refid="AccountColumns" />
+		from Account t where t.account_id = #{id}
+		and t.status_code !='04'
+	</select>
+	<select id="selectAccountById" parameterType="string" resultType="ThirdDRUserInf">
+		select account_code as accountCode,
+			login_name as accountName,
+			case gender
+			when 1 then '男'
+			else '女'
+			end as accountGender,
+			mobilephone as accountMobile,
+			DATE_FORMAT(create_time, '%Y-%m-%d') as registerDate
+		from Account t where t.account_id = #{accountId}
+	</select>
+	<insert id="saveAccount" parameterType="Account">
+		insert into account
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="accountId != null">
+				account_id,
+			</if>
+			<if test="accountCode != null">
+				account_code,
+			</if>
+			<if test="appId != null">
+				app_id,
+			</if>
+			<if test="loginId != null">
+				login_id,
+			</if>
+			<if test="loginName != null">
+				login_name,
+			</if>
+			<if test="mobilephone != null">
+				mobilephone,
+			</if>
+			<if test="email != null">
+				email,
+			</if>
+			<if test="authenum != null">
+				auth_enum,
+			</if>
+			<if test="password != null">
+				password,
+			</if>
+			<if test="roles != null">
+				roles,
+			</if>
+			<if test="loginTime != null">
+				login_time,
+			</if>
+			<if test="statusCode != null">
+				status_code,
+			</if>
+			<if test="statusTime != null">
+				status_time,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="operatorId != null">
+				operator_id,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="accountId != null">
+				#{accountId,jdbcType=BIGINT},
+			</if>
+			<if test="accountCode != null">
+				#{accountCode,jdbcType=INTEGER},
+			</if>
+			<if test="appId != null">
+				#{appId,jdbcType=CHAR},
+			</if>
+			<if test="loginId != null">
+				#{loginId,jdbcType=VARCHAR},
+			</if>
+			<if test="loginName != null">
+				#{loginName,jdbcType=VARCHAR},
+			</if>
+			<if test="mobilephone != null">
+				#{mobilephone,jdbcType=VARCHAR},
+			</if>
+			<if test="email != null">
+				#{email,jdbcType=VARCHAR},
+			</if>
+			<if test="authenum != null">
+				#{authenum,jdbcType=INTEGER},
+			</if>
+			<if test="password != null">
+				#{password,jdbcType=VARCHAR},
+			</if>
+			<if test="roles != null">
+				#{roles,jdbcType=BIGINT},
+			</if>
+			<if test="loginTime != null">
+				#{loginTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="statusCode != null">
+				#{statusCode,jdbcType=CHAR},
+			</if>
+			<if test="statusTime != null">
+				#{statusTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="operatorId != null">
+				#{operatorId,jdbcType=BIGINT},
+			</if>
+		</trim>
+	</insert>
+	<select id="queryAccountIdByParams" parameterType="hashmap"
+		resultType="String">
+	<![CDATA[
+		select distinct e.account_id from vi_emp_info e 
+		where e.project_id = #{projectId} and e.duty_type = #{dutyType} and e.permissions & #{permissions}
+	 ]]>
+	 	<if test="accountId != null and accountId != '' ">
+			and t.account_id = #{accountId}
+		</if>
+	</select>
+
+	<select id="getAccountListByList" resultMap="AccountM">
+		select
+		<include refid="AccountColumns" />
+		from account WHERE
+		account_id in
+		(
+		<foreach collection="list" item="item" separator=",">
+			#{item}
+		</foreach>
+		)
+	</select>
+	<select id="selectAccountByQrTransitCode" resultMap="AccountM">
+		select
+        	a.account_id,
+        	a.account_code,
+        	a.login_id,
+        	a.login_name,
+        	a.mobilephone,
+        	a.email,
+        	a.login_time,
+        	a.status_code,
+        	a.status_time,
+        	a.create_time,
+        	a.update_time,
+        	a.operator_id,
+        	a.data_version
+		from account a
+		join account_transit at on at.account_id = a.account_id
+		WHERE at.transit_type = "00" and at.transit_code = #{transitCode}
+	</select>
+	<select id="selectAccountByAccountId" resultType="com.bossbutler.pojo.system.Account">
+		select
+        	a.account_id accountId,
+        	a.account_code accountCode,
+        	a.login_id loginId,
+        	a.login_name loginName,
+        	a.mobilephone,
+        	a.email,
+        	a.status_code statusCode,
+        	a.login_time loginTime,
+        	a.status_time statusTime,
+        	a.create_time createTime,
+        	a.update_time updateTime,
+        	a.operator_id operatorId,
+			a.data_version dataVersion,
+			act.transit_code,
+			act.transit_type
+		from account a
+		JOIN account_transit act on a.account_id = act.account_id 
+		WHERE act.transit_type = "00" and a.account_id = #{accountId}
+	</select>
+	<!--<select id="quertyProject" resultMap="BaseResultMap">
+		select
+			project_id, project_code, project_name, project_type,
+			admin_org, city_id,
+			district_id,
+			plate_id, address, description,
+			longitude, latitude, status_code, status_time,
+			create_time,
+			update_time, operator_id, data_version
+		from project
+		where project_code= #{code}
+	</select>-->
+	<select id="checkPower" resultType="com.bossbutler.pojo.system.Employee">
+		select e.roles,epr.roles eprRoles,e.emp_id empId,e.org_id orgId,e.emp_name empName,e.mobilephone mobilephone,e.email email,e.gender gender,e.status_code statusCode
+		from emp e
+		LEFT JOIN account a on a.account_id=e.account_id
+		LEFT JOIN emp_project_relation epr on epr.emp_id=e.emp_id
+		where a.account_id=#{accountId}
+	</select>
+	<select id="getProjects" resultType="com.bossbutler.pojo.project.Project">
+		select DISTINCT p.project_id projectId,p.project_name  projectName,p.project_code projectCode,opr.roles roles,o.org_id from project p 
+		left JOIN org_project_relation opr on p.project_id=opr.project_id
+		LEFT JOIN org o on o.org_id=opr.org_id
+		where o.org_id in (
+		<foreach collection="list" item="item" separator=",">
+			#{item}
+		</foreach>
+		)
+	</select>
+	<select id="getRolePermissions" resultType="com.bossbutler.pojo.org.RoleModel">
+		select * from role r
+		where r.app_id='002' and r.org_id=#{org_id} and r.role_code<![CDATA[&]]>#{erpRole}
+	</select>
+	<update id="updateLoginTime">
+		update account a set a.login_time=sysdate()
+		<if test="logInfo != null and logInfo != '' ">
+			,a.login_info = #{logInfo}
+		</if>
+		where a.account_id=#{accountId}
+	</update>
+	<select id="queryByAccountId" parameterType="String" resultType="java.lang.Integer">
+	SELECT COUNT(1) from  project
+		INNER JOIN emp_project_relation on
+		project.project_id=emp_project_relation.project_id
+		INNER JOIN emp on
+		emp.emp_id = emp_project_relation.emp_id
+		INNER JOIN org ON org.org_id =
+		emp.org_id
+		INNER JOIN account ON account.account_id = emp.account_id
+		where 
+		account.account_id = #{accountId}
+		and org.duty_type='0301'
+		
+	</select>
+	
+	<select id="getAccountProfileByParam" resultType="string" parameterType="map">
+		select profile from account_profile 
+		where status_code = '01'
+		<if test="accountId != null and accountId != '' ">
+			and account_id = #{accountId}
+		</if>
+		<if test="type != null and type != '' ">
+			and type = #{type}
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bossbutler.mapper.customerservice.PropertyBillMapper">
+	<select id="querypropertytype" resultType="propertytype">
+		SELECT
+		a.bill_type AS
+		typeId,
+		CASE
+		WHEN a.bill_type = '01' THEN
+		'工程'
+		WHEN
+		a.bill_type = '02'
+		THEN
+		'保安'
+		WHEN a.bill_type = '03' THEN
+		'保洁'
+		WHEN
+		a.bill_type = '04' THEN
+		'客服'
+		WHEN a.bill_type = '05' THEN
+		'其他'
+		END AS
+		typeName
+		FROM
+		service_bill a
+		WHERE 1=1 
+		<if test="type==1">
+			and
+			(a.status_code='02' or a.status_code='04')
+			UNION
+			select
+			a.bill_type AS
+			typeId,
+			CASE
+			WHEN a.bill_type = '01' THEN
+			'工程'
+			WHEN
+			a.bill_type = '02'
+			THEN
+			'保安'
+			WHEN a.bill_type = '03' THEN
+			'保洁'
+			WHEN
+			a.bill_type = '04' THEN
+			'客服'
+			WHEN a.bill_type = '05' THEN
+			'其他'
+			END AS
+			typeName
+			from service_bill a
+			join service_progress b
+			on
+			a.bill_id=b.bill_id
+			where b.operator_id=#{accountId}
+			and
+			a.status_code='04'
+			and b.status_code='03'
+		</if>
+		<if test="type==2">
+			and
+			a.status_code='06'
+			UNION
+			select a.bill_type AS
+			typeId,
+			CASE
+			WHEN a.bill_type = '01' THEN
+			'工程'
+			WHEN
+			a.bill_type = '02'
+			THEN
+			'保安'
+			WHEN a.bill_type = '03' THEN
+			'保洁'
+			WHEN
+			a.bill_type = '04' THEN
+			'客服'
+			WHEN
+			a.bill_type = '05' THEN
+			'其他'
+			END AS
+			typeName
+			from service_bill a
+			join
+			service_progress b
+			on a.bill_id=b.bill_id
+			where
+			b.operator_id=#{accountId}
+			and a.status_code='06'
+			and
+			b.status_code='03'
+		</if>
+		<if test="type==3">
+			and
+			(a.status_code='07' or a.status_code='08')
+		</if>
+			and a.project_id = #{projectId}
+	</select>
+	<select id="queryBillPageListlist" resultType="proterty">
+	select a.bill_id AS serverId, a.status_code as statusCode, a.bill_title AS tittle, a.create_time as monadtime,
+	a.bill_address as address,a.link_man as name,a.bill_code as servercode,
+	case
+	  when a.bill_type = '01' then '工程类'
+	  when a.bill_type = '02' then '保安类'
+	  when a.bill_type = '03' then '保洁类'
+	  when a.bill_type = '04' then '客服类'
+	  when a.bill_type = '05' then '其他类'
+	end as monadrype,
+	case 
+		when a.status_code = '02' then '待接单'
+		when a.status_code = '05' then '被指派'
+		when a.status_code = '06' then '已接单'	
+		when a.status_code = '07' then '已完成'
+		when a.status_code = '08' then '已评价'
+	end as type,
+	<![CDATA[ 
+	case when b.permissions & 1024 then '1' else '0' end as pd,
+	case when b.permissions & 2048 then '1' else '0' end as jd,
+	case when b.permissions & 4096 then '1' else '0' end as ck
+	]]>
+	from (	
+			select s.*,send.operator_id send_account,assigned.operator_id assigned_account,
+				receive.operator_id receive_account,complete.operator_id complete_account,evaluate.operator_id evaluate_account,
+				cancel.operator_id cancel_account
+			from service_bill s left join service_progress send on send.bill_id = s.bill_id and send.status_code = '03'
+				left join service_progress assigned on assigned.bill_id = s.bill_id and assigned.status_code = '04'
+				left join service_progress receive on receive.bill_id = s.bill_id and receive.status_code = '06'
+				left join service_progress complete on complete.bill_id = s.bill_id and complete.status_code = '07'
+				left join service_progress evaluate on evaluate.bill_id = s.bill_id and evaluate.status_code = '08'
+				left join service_progress cancel on cancel.bill_id = s.bill_id and cancel.status_code = '09'
+			where s.project_id = #{projectId}
+		<if test="billtype != null and billtype != '' ">
+			and s.bill_type = '01'
+		</if>
+		<if test="type==1">
+			and s.status_code = '02' or (s.status_code = '04' and (assigned.operator_id = #{accountId} or send.operator_id = #{accountId} )) 
+		</if>
+		<if test="type==2">
+			and s.status_code = '06' and receive.operator_id = #{accountId}
+		</if>
+		<if test="type==3">
+			and complete.operator_id = #{accountId} 
+		</if>
+	) a ,(
+	<![CDATA[ 
+			select * from vi_emp_info e where duty_type = '0301' and e.account_id = #{accountId}
+				and (e.permissions & 1024 or e.permissions & 2048 or e.permissions & 4096)
+	]]>			
+	) b
+	</select>
+</mapper>

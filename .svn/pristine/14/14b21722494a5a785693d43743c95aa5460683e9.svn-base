@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	 		http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/mvc
+            http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<!-- 系统日志发送消息的目的队列 -->
+	<bean id="logQueueDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0"
+			value="${jms.appserver.destination.log}" />
+	</bean>
+
+	<!-- ibaoban队列 -->
+	<bean id="ibaobanPushDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0"
+			value="${jms.destination.ibaobanPushMessage}" />
+	</bean>
+
+	<!-- baobanmanager队列 -->
+	<bean id="baobanmanagerPushDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0"
+			value="${jms.destination.baobanmanagerPushMessage}" />
+	</bean>
+
+	<!-- ARPM队列 -->
+	<bean id="aRPMPushDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0"
+			value="${jms.destination.ARPMPushMessage}" />
+	</bean>
+	<!-- SHZX队列 -->
+	<bean id="sHZXPushDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0"
+			value="${jms.destination.SHZXPushMessage}" />
+	</bean>
+	<!-- SJSM队列 -->
+	<bean id="sJSMPushDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0"
+			value="${jms.destination.SJSMPushMessage}" />
+	</bean>
+	<!-- 发送短信队列 -->
+	<bean id="sendMobileMessageDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0"
+			value="${jms.destination.sendMobileMessage}" />
+	</bean>
+</beans>
